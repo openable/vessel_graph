@@ -40,26 +40,28 @@ function vessel_graph
     h = initGUI();
 
     function h = initGUI()
-        h.fig = figure('Name','Vessel Graph', 'Resize','off');
+        h.fig = figure('Name','Vessel Graph', 'Resize','off', 'Position', [100 400 980 840]);
         h.ax = axes('Parent',h.fig, 'ButtonDownFcn',@onMouseDown, ...
-            'XLim',[0 1], 'YLim',[0 1], 'XTick',[], 'YTick',[], 'Box','on', ...
-            'Units','pixels', 'Position',[160 20 380 380]);
+            'XLim',[0 1000], 'YLim',[0 1000], 'XTick',[], 'YTick',[], 'Box','on', ...
+            'Units','pixels', 'Position',[160 20 800 800]);
 
+        %radio code move
+        h.rA = uicontrol('Style','radiobutton', 'Parent',h.fig, 'String','Artery', ...
+            'Position',[20 800 60 20],'Value',1,'Callback',@onArtery);
+        h.rV = uicontrol('Style','radiobutton', 'Parent',h.fig, 'String','Vein', ...
+            'Position',[90 800 60 20],'Callback',@onVein);
         h.list = uicontrol('Style','listbox', 'Parent',h.fig, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',1, ...
-            'Position',[20 80 130 290], 'Callback',@onSelect);
-        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Clear', ...
-            'Position',[20 20 60 20], 'Callback',@onClear);
+            'Position',[20 140 130 650], 'Callback',@onSelect);
         uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Delete', ...
-            'Position',[20 50 60 20], 'Callback',@onDelete);
+            'Position',[20 110 130 20], 'Callback',@onDelete);
+        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Clear', ...
+            'Position',[20 80 130 20], 'Callback',@onClear);
         uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Import', ...
-            'Position',[90 20 60 20], 'Callback',@onImport);
+            'Position',[20 50 130 20], 'Callback',@onImport);
         uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Export', ...
-            'Position',[90 50 60 20], 'Callback',@onExport);
-        h.rA = uicontrol('Style','radiobutton', 'Parent',h.fig, 'String','Artery', ...
-            'Position',[20 380 60 20],'Value',1,'Callback',@onArtery);
-        h.rV = uicontrol('Style','radiobutton', 'Parent',h.fig, 'String','Vein', ...
-            'Position',[90 380 60 20],'Callback',@onVein);
+            'Position',[20 20 130 20], 'Callback',@onExport);
+
 
         
         h.cmenu = uicontextmenu('Parent',h.fig);
@@ -82,7 +84,7 @@ function vessel_graph
 
     end
 
-    function onArtery(source,callbackdata)
+    function onArtery(~,~)
         h.rV.Value = ~h.rA.Value;
         setCategory()
     end
@@ -125,7 +127,7 @@ function vessel_graph
 
             % hit test (find node closest to click location: euclidean distnce)
             [dst,idx] = min(sum(bsxfun(@minus, pts, p(1,1:2)).^2,2));
-            if sqrt(dst) > 0.025, return; end
+            if sqrt(dst) > 8, return; end
 
             if isempty(prevIdx)
                 % starting node (requires a second click to finish)
@@ -207,7 +209,7 @@ function vessel_graph
         set(h.selected, 'XData',pts(selectIdx,1), 'YData',pts(selectIdx,2))
 
         % list of nodes
-        set(h.list, 'String',num2str(pts,'(%.3f,%.3f)'))
+        set(h.list, 'String',num2str(pts,'(%.2f, %.2f)'))
 
         % node labels
         if ishghandle(h.txt), delete(h.txt); end
