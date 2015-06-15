@@ -81,7 +81,6 @@ function vessel_graph
         h.edges = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
         h.txt = [];
-
     end
 
     function onArtery(~,~)
