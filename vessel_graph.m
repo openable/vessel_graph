@@ -30,7 +30,7 @@ function vessel_graph
 %     and handle the assignment of values in the same manner... I will that part to you :)
 
     % data
-    showLabels = false;   % flag to determine whether to show node labels
+    showVertices = false;   % flag to determine whether to show node labels
     prevIdx = [];         % keeps track of 1st node clicked in creating edges
     selectIdx = [];       % used to highlight node selected in listbox
     pts = zeros(0,2);     % x/y coordinates of vertices
@@ -67,7 +67,7 @@ function vessel_graph
 
         
         h.cmenu = uicontextmenu('Parent',h.fig);
-        h.menu = uimenu(h.cmenu, 'Label','Show labels', 'Checked','off', ...
+        h.menu = uimenu(h.cmenu, 'Label','Show verticies', 'Checked','off', ...
             'Callback',@onCMenu);
         set(h.list, 'UIContextMenu',h.cmenu)
 
@@ -192,7 +192,7 @@ function vessel_graph
 
     function onCMenu(~,~)
         % flip state
-        showLabels = ~showLabels;
+        showVertices = ~showVertices;
         redraw()
     end
 
@@ -214,11 +214,12 @@ function vessel_graph
 
         % node labels
         if ishghandle(h.txt), delete(h.txt); end
-        if showLabels
+        if showVertices
             set(h.menu, 'Checked','on')
-            h.txt = text(pts(:,1)+0.01, pts(:,2)+0.01, ...
-                num2str((1:size(pts,1))'), ...
-                'HitTest','off', 'FontSize',8, ...
+            vColor = 'b'; if h.rV.Value, vColor = 'r'; end
+            h.txt = text(pts(:,1)+2.5, pts(:,2)+2.5, ...
+                strcat('V', num2str((1:size(pts,1))')), ...
+                'HitTest','off', 'FontSize', 8, 'Color', vColor, 'FontWeight', 'bold', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
         else
             set(h.menu, 'Checked','off')
