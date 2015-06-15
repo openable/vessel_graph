@@ -40,7 +40,8 @@ function vessel_graph
     h = initGUI();
 
     function h = initGUI()
-        h.fig = figure('Name','Vessel Graph', 'Resize','off', 'Position', [100 400 980 840]);
+        scr = get(groot,'ScreenSize');
+        h.fig = figure('Name','Vessel Graph', 'Resize','off', 'Position', [((scr(3)-980)/2) ((scr(4)-840)/2) 980 840]);
         h.ax = axes('Parent',h.fig, 'ButtonDownFcn',@onMouseDown, ...
             'XLim',[0 1000], 'YLim',[0 1000], 'XTick',[], 'YTick',[], 'Box','on', ...
             'Units','pixels', 'Position',[160 20 800 800]);
