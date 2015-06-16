@@ -32,6 +32,7 @@ function vessel_graph
 %   commit test again
 %   github commit test again
 %   github commit test again2
+%   dual test again
 
     % data
     showVertices = false;   % flag to determine whether to show node labels
