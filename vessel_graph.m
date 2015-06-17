@@ -28,6 +28,7 @@ function vessel_graph
 %     handling the ButtonDownFcn callback.
 %     Similarly you could create a second listbox to display the edges
 %     and handle the assignment of values in the same manner... I will that part to you :)
+%   Branch Test2 ETRI
 
     % data
     showVertices = false;   % flag to determine whether to show node labels
