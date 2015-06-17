@@ -28,12 +28,6 @@ function vessel_graph
 %     handling the ButtonDownFcn callback.
 %     Similarly you could create a second listbox to display the edges
 %     and handle the assignment of values in the same manner... I will that part to you :)
-%   branch test
-%   commit test again
-%   github commit test again
-%   github commit test again2
-%   vaio modifing test
-%   collaborator test
 
     % data
     showVertices = false;   % flag to determine whether to show node labels
