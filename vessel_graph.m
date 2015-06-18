@@ -35,6 +35,7 @@ function vessel_graph
     selectIdx = [];       % used to highlight node selected in listbox
     pts = zeros(0,2);     % x/y coordinates of vertices
     adj = sparse([]);     % sparse adjacency matrix (undirected)
+    label = {};
 
     % create GUI
     h = initGUI();
@@ -83,6 +84,7 @@ function vessel_graph
         h.edges = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
         h.vertices = [];
+        h.vessels = [];
     end
 
     function onArtery(~,~)
@@ -136,6 +138,7 @@ function vessel_graph
             else
                 % add the new edge
                 adj(prevIdx,idx) = 1;
+                label{length(label)+1} = strcat('E_', num2str(length(label)));
                 prevIdx = [];
             end
         end
@@ -203,6 +206,11 @@ function vessel_graph
         p(1:3:end,:) = pts(i,:);
         p(2:3:end,:) = pts(j,:);
         set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
+        eColor = 'r'; if h.rV.Value, eColor = 'b'; end
+        h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+             strcat('E', num2str((1:(size(p,1)/3))')), ...
+             'HitTest','off', 'FontSize', 10, 'Color', eColor, 'FontWeight', 'bold', ...
+             'VerticalAlign','bottom', 'HorizontalAlign','left');
 
         % nodes
         set(h.pts, 'XData',pts(:,1), 'YData',pts(:,2))
