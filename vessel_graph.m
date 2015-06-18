@@ -82,7 +82,7 @@ function vessel_graph
             'LineStyle','none', 'LineWidth',2);
         h.edges = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
-        h.txt = [];
+        h.vertices = [];
     end
 
     function onArtery(~,~)
@@ -213,11 +213,11 @@ function vessel_graph
         set(h.list, 'String',strcat(num2str((1:size(pts,1))'), num2str(pts,': (%.2f, %.2f)')))
 
         % node labels
-        if ishghandle(h.txt), delete(h.txt); end
+        if ishghandle(h.vertices), delete(h.vertices); end
         if showVertices
             set(h.menu, 'Checked','on')
             vColor = 'b'; if h.rV.Value, vColor = 'r'; end
-            h.txt = text(pts(:,1)+2.5, pts(:,2)+2.5, ...
+            h.vertices = text(pts(:,1)+2.5, pts(:,2)+2.5, ...
                 strcat('V', num2str((1:size(pts,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', vColor, 'FontWeight', 'bold', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
