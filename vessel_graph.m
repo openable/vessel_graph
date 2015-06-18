@@ -138,7 +138,7 @@ function vessel_graph
             else
                 % add the new edge
                 adj(prevIdx,idx) = 1;
-                label{length(label)+1} = strcat('E_', num2str(length(label)));
+%                label{size(adj,1)} = strcat('E', num2str(size(adj,1)));
                 prevIdx = [];
             end
         end
@@ -208,9 +208,10 @@ function vessel_graph
         set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
         eColor = 'r'; if h.rV.Value, eColor = 'b'; end
         h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-             strcat('E', num2str((1:(size(p,1)/3))')), ...
+             strcat('E', num2str((1:(size(p,1)/3))')), ...  % label(:)
              'HitTest','off', 'FontSize', 10, 'Color', eColor, 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
+
 
         % nodes
         set(h.pts, 'XData',pts(:,1), 'YData',pts(:,2))
