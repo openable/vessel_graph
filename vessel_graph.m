@@ -72,18 +72,24 @@ function vessel_graph
             'Callback',@onCMenu);
         set(h.list, 'UIContextMenu',h.cmenu)
 
+        % 꼭지점
         h.pts = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
             'LineStyle','none');
+        % 리스트 상에서 선택 했을 때 노란색으로 표시
         h.selected = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','y', ...
             'LineStyle','none');
+        % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prev = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
+        % 선분 목록
         h.edges = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
+        % 꼭지점 라벨링. V1, V2, ... 순서대로
         h.vertices = [];
+        % 선분 라벨링. E1, E2, ... 순서대로
         h.vessels = [];
     end
 
@@ -207,10 +213,10 @@ function vessel_graph
         p(2:3:end,:) = pts(j,:);
         set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
         eColor = 'r'; if h.rV.Value, eColor = 'b'; end
-        h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-             strcat('E', num2str((1:(size(p,1)/3))')), ...  % label(:)
-             'HitTest','off', 'FontSize', 10, 'Color', eColor, 'FontWeight', 'bold', ...
-             'VerticalAlign','bottom', 'HorizontalAlign','left');
+%        h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+%             strcat('E', num2str((1:(size(p,1)/3))')), ...  % label(:)
+%             'HitTest','off', 'FontSize', 10, 'Color', eColor, 'FontWeight', 'bold', ...
+%             'VerticalAlign','bottom', 'HorizontalAlign','left');
 
 
         % nodes
