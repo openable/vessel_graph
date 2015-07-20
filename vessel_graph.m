@@ -173,11 +173,33 @@ function vessel_graph
         if isempty(pts), return; end
 
         % delete selected node
-        idx = get(h.list, 'Value');        
+        if isempty(prevIdx)             % 마우스 오른쪽 클릭으로도 지울 수 있게.
+            idx = get(h.list, 'Value');
+        else
+            idx = prevIdx;
+            prevIdx = [];
+        end
         pts(idx,:) = [];
         % 선분 삭제 단계
         adj(:,idx) = [];
         adj(idx,:) = [];
+        row_list = [];
+        for q = 1:size(label,1)
+            if label{q,1} == idx || label{q,2} == idx
+                row_list = [row_list q];
+            end
+        end
+        label(row_list,:) = [];
+        for q = 1:size(label,1)
+            if label{q,1} > idx
+                label{q,1} = label{q,1}-1;
+            end
+            if label{q,2} > idx
+                label{q,2} = label{q,2}-1;
+            end
+            label{q,3} = ['E' num2str(q)];
+        end
+        
 
         % clear previous selections
         if prevIdx == idx
@@ -196,6 +218,7 @@ function vessel_graph
         selectIdx = [];
         pts = zeros(0,2);
         adj = sparse([]);
+        label = cell(0,3);      % label 엣지 정보 제거 추가
 
         % update GUI
         set(h.list, 'Value',1)
@@ -235,6 +258,7 @@ function vessel_graph
 %        p(1:3:end,:) = pts(i,:);
 %        p(2:3:end,:) = pts(j,:);
         set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
+        if ishghandle(h.vessels), delete(h.vessels); end
         if size(label,1) > 0
             eColor = 'r'; if h.rV.Value, eColor = 'b'; end
             for q = 1:size(label,1)
