@@ -28,14 +28,15 @@ function vessel_graph
 %     handling the ButtonDownFcn callback.
 %     Similarly you could create a second listbox to display the edges
 %     and handle the assignment of values in the same manner... I will that part to you :)
-
+% 선분 관련 주석 달았음. 선분 편집할 텍스트 창 생성
     % data
     showVertices = false;   % flag to determine whether to show node labels
     prevIdx = [];         % keeps track of 1st node clicked in creating edges
     selectIdx = [];       % used to highlight node selected in listbox
     pts = zeros(0,2);     % x/y coordinates of vertices
-    adj = sparse([]);     % sparse adjacency matrix (undirected)
-    label = {};
+    adj = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+    label = cell(0,3);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름
+    
 
     % create GUI
     h = initGUI();
@@ -55,7 +56,15 @@ function vessel_graph
             'Position',[90 800 60 20],'Callback',@onVein);
         h.list = uicontrol('Style','listbox', 'Parent',h.fig, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',1, ...
-            'Position',[20 140 130 650], 'Callback',@onSelect);
+            'Position',[20 170 130 620], 'Callback',@onSelect); % 140
+        h.lable_text = uicontrol('Style','text', 'Parent',h.fig, 'String',{}, ...
+            'String', 'Label:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
+            'Position',[20 140 40 20]);
+        h.lable_edit = uicontrol('Style','edit', 'Parent',h.fig, 'String',{}, ...
+            'HorizontalAlignment', 'left', 'Enable', 'off', ...
+            'Position',[60 140 60 20], 'Callback',@onLableEdit);
+        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Set', ...
+            'Position',[125 140 25 20], 'Callback',@onLableEdit);
         uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Delete', ...
             'Position',[20 110 130 20], 'Callback',@onDelete);
         uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Clear', ...
@@ -87,9 +96,9 @@ function vessel_graph
         % 선분 목록
         h.edges = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
-        % 꼭지점 라벨링. V1, V2, ... 순서대로
+        % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
         h.vertices = [];
-        % 선분 라벨링. E1, E2, ... 순서대로
+        % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
         h.vessels = [];
     end
 
@@ -130,6 +139,8 @@ function vessel_graph
             % add a new node
             pts(end+1,:) = p(1,1:2);
             adj(end+1,end+1) = 0;
+        elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
+            onLabelSet();
         else
             % add a new edge (requires at least 2 nodes)
             if size(pts,1) < 2, return; end
@@ -142,9 +153,12 @@ function vessel_graph
                 % starting node (requires a second click to finish)
                 prevIdx = idx;
             else
-                % add the new edge
+                % add the new edge % 선분 생성 단계
                 adj(prevIdx,idx) = 1;
-%                label{size(adj,1)} = strcat('E', num2str(size(adj,1)));
+                m = size(label,1);
+                label{m+1,1} = prevIdx;
+                label{m+1,2} = idx;
+                label{m+1,3} = strcat('E', num2str(m+1));
                 prevIdx = [];
             end
         end
@@ -161,6 +175,7 @@ function vessel_graph
         % delete selected node
         idx = get(h.list, 'Value');        
         pts(idx,:) = [];
+        % 선분 삭제 단계
         adj(:,idx) = [];
         adj(idx,:) = [];
 
@@ -189,7 +204,7 @@ function vessel_graph
 
     function onExport(~,~)
         % export nodes and adjacency matrix to base workspace
-        assignin('base', 'adj',(adj+adj')>0)  % make it symmetric
+        assignin('base', 'adj',(adj+adj')>0)  % make it symmetric% 선분 시메트릭하게 복사
         assignin('base', 'xy',pts)
     end
 
@@ -205,19 +220,33 @@ function vessel_graph
         redraw()
     end
 
-    function redraw()
-        % edges
-        p = nan(3*nnz(adj),2);
-        [i,j] = find(adj);
-        p(1:3:end,:) = pts(i,:);
-        p(2:3:end,:) = pts(j,:);
-        set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
-        eColor = 'r'; if h.rV.Value, eColor = 'b'; end
-%        h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-%             strcat('E', num2str((1:(size(p,1)/3))')), ...  % label(:)
-%             'HitTest','off', 'FontSize', 10, 'Color', eColor, 'FontWeight', 'bold', ...
-%             'VerticalAlign','bottom', 'HorizontalAlign','left');
+    function onLabelSet(~,~)
+        set(h.lable_edit, 'Enable', 'on');
+    end
 
+    function redraw()
+        % edges % 선분 그리기 단계
+        p = nan(3*nnz(adj),2);
+        for q = 1:size(label,1)
+            p(1+3*(q-1),:) = pts(label{q,1},:);
+            p(2+3*(q-1),:) = pts(label{q,2},:);
+        end
+%        [i,j] = find(adj);
+%        p(1:3:end,:) = pts(i,:);
+%        p(2:3:end,:) = pts(j,:);
+        set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
+        if size(label,1) > 0
+            eColor = 'r'; if h.rV.Value, eColor = 'b'; end
+            for q = 1:size(label,1)
+                label_list(q,1:size(label{q,3},2)) = label{q,3};
+            end
+            h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+                 label_list, ...  % label(:)
+                 'HitTest','off', 'FontSize', 10, 'Color', eColor, 'FontWeight', 'bold', ...
+                 'VerticalAlign','bottom', 'HorizontalAlign','left');
+    %             strcat('E', num2str((1:(size(p,1)/3))')), ...  % label(:)
+    %                'ButtonDownFcn', @onLabelSet, ...
+        end
 
         % nodes
         set(h.pts, 'XData',pts(:,1), 'YData',pts(:,2))
