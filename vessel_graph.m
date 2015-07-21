@@ -28,7 +28,7 @@ function vessel_graph
 %     handling the ButtonDownFcn callback.
 %     Similarly you could create a second listbox to display the edges
 %     and handle the assignment of values in the same manner... I will that part to you :)
-% 선분 관련 주석 달았음. 선분 편집할 텍스트 창 생성
+
     % data
     showVertices = true;   % flag to determine whether to show node labels
     prevIdx = [];         % keeps track of 1st node clicked in creating edges
@@ -55,7 +55,7 @@ function vessel_graph
         h.rV = uicontrol('Style','radiobutton', 'Parent',h.fig, 'String','Vein', ...
             'Position',[90 800 60 20],'Callback',@onVein);
         h.list = uicontrol('Style','listbox', 'Parent',h.fig, 'String',{}, ...
-            'Min',1, 'Max',1, 'Value',1, ...
+            'Min',1, 'Max',1, 'Value',1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
             'Position',[20 170 130 620], 'Callback',@onSelect); % 140
         h.lable_text = uicontrol('Style','text', 'Parent',h.fig, 'String',{}, ...
             'String', 'Label:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
@@ -85,10 +85,6 @@ function vessel_graph
         h.pts = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
             'LineStyle','none');
-        % 리스트 상에서 선택 했을 때 노란색으로 표시
-%         h.selected = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
-%             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','y', ...
-%             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prev = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
@@ -132,6 +128,11 @@ function vessel_graph
 
     function onMouseDown(~,~)
         % get location of mouse click (in data coordinates)
+        if strcmp(get(h.lable_edit, 'Enable'), 'on')
+            set(h.lable_edit, 'String', '')
+            set(h.lable_edit, 'Enable', 'off')
+        end
+        
         p = get(h.ax, 'CurrentPoint');
 
         % determine whether normal left click was used or otherwise
@@ -142,9 +143,6 @@ function vessel_graph
         elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
             onLabelEdit();
         else
-            % add a new edge (requires at least 2 nodes)
-%            if size(pts,1) < 2, return; end
-
             % hit test (find node closest to click location: euclidean distnce)
             [dst,idx] = min(sum(bsxfun(@minus, pts, p(1,1:2)).^2,2));
             if sqrt(dst) > 8, return; end
@@ -183,13 +181,13 @@ function vessel_graph
         % 선분 삭제 단계
         adj(:,idx) = [];
         adj(idx,:) = [];
-        row_list = [];
+        rowList = [];
         for q = 1:size(label,1)
             if label{q,1} == idx || label{q,2} == idx
-                row_list = [row_list q];
+                rowList = [rowList q];
             end
         end
-        label(row_list,:) = [];
+        label(rowList,:) = [];
         for q = 1:size(label,1)
             if label{q,1} > idx
                 label{q,1} = label{q,1}-1;
@@ -254,9 +252,12 @@ function vessel_graph
     end
 
     function onLabelSet(~,~)
+        if strcmp(set(h.lable_edit, 'Enable'), 'off'), return; end
+        
         label{selectIdx,3} = get(h.lable_edit, 'String');
         label{selectIdx,4} = 1;
         selectIdx = [];
+        set(h.lable_edit, 'String', '')
         set(h.lable_edit, 'Enable', 'off')
         redraw()
     end
@@ -282,10 +283,9 @@ function vessel_graph
         if ~isempty(selectIdx)
             set(h.vessels(selectIdx), 'Color', 'y')
         end
-%        set(h.selected, 'XData',pts(selectIdx,1), 'YData',pts(selectIdx,2))
 
         % list of edge
-        set(h.list, 'String', strcat(label(:,3)))
+        set(h.list, 'String', strcat(num2str((1:size(label,1))'), ': ', label(:,3)))
 
         % node labels
         if ishghandle(h.vertices), delete(h.vertices); end
