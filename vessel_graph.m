@@ -16,7 +16,7 @@ function vessel_graph
     adjV = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
     labelV = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
     
-    vesselState = 1;        % Artery / Vein state
+    vesselState = 1;        % Artery (1) / Vein (0) state
     
 
     % create GUI
@@ -366,7 +366,7 @@ function vessel_graph
     end
 
     function onImport(~,~)
-        [FileName,PathName] = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
+        FileName = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
         onClear();
         finput = load(FileName);
         
