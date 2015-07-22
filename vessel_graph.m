@@ -28,20 +28,20 @@ function vessel_graph
             'Min',1, 'Max',1, 'Value',1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
             'Position',[20 170 130 620], 'Callback',@onSelect); % 140
         h.lable_text = uicontrol('Style','text', 'Parent',h.fig, 'String',{}, ...
-            'String', 'Label:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
+            'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
             'Position',[20 140 40 20]);
         h.lable_edit = uicontrol('Style','edit', 'Parent',h.fig, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
             'Position',[60 140 60 20]);
-        h.labelSet = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Set', ...
+        h.labelSet = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','설정', ...
             'Position',[125 140 25 20], 'Callback',@onLabelSet, 'Enable', 'off');
-        h.delete = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Delete', ...
+        h.delete = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','점/선분 삭제', ...
             'Position',[20 110 130 20], 'Callback',@onDelete, 'Enable', 'off');
-        h.clear = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Clear', ...
+        h.clear = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','초기화', ...
             'Position',[20 80 130 20], 'Callback',@onClear);
-        h.import = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Import', ...
+        h.import = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','가져오기', ...
             'Position',[20 50 130 20], 'Callback',@onImport);
-        h.export = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Export', ...
+        h.export = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','내보내기', ...
             'Position',[20 20 130 20], 'Callback',@onExport);
 
 
@@ -123,11 +123,15 @@ function vessel_graph
                 prevIdx = idx;
             else
                 % add the new edge % 선분 생성 단계
-                adj(prevIdx,idx) = 1;
-                m = size(label,1);
-                label{m+1,1} = prevIdx;
-                label{m+1,2} = idx;
-                label{m+1,3} = strcat('E', num2str(m+1));
+                if adj(prevIdx,idx) ~= 1 && adj(idx,prevIdx) ~= 1
+                    adj(prevIdx,idx) = 1;
+                    m = size(label,1);
+                    label{m+1,1} = prevIdx;
+                    label{m+1,2} = idx;
+                    label{m+1,3} = strcat('E', num2str(m+1));
+                else
+                    % warndlg('두 점은 이미 연결되었습니다.','거절')
+                end
                 prevIdx = [];
                 set(h.delete, 'Enable', 'off')
             end
@@ -177,11 +181,7 @@ function vessel_graph
             
         else
             idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
-            try
-                adj(label{idx,1}, label{idx,2}) = 0;
-            catch
-                adj(label{idx,2}, label{idx,1}) = 0;
-            end
+            adj(label{idx,1}, label{idx,2}) = 0;
             label(idx,:) = [];
             
             for q = 1:size(label,1)                
@@ -227,9 +227,18 @@ function vessel_graph
     end
 
     function onExport(~,~)
-        % export nodes and adjacency matrix to base workspace
-        assignin('base', 'adj',(adj+adj')>0)  % make it symmetric% 선분 시메트릭하게 복사
-        assignin('base', 'xy',pts)
+        fname = datestr(now,'yymmddHHMMSS');
+        uisave({'pts', 'adj', 'label'}, ['VG_' fname]);
+    end
+
+    function onImport(~,~)
+        [FileName,PathName] = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
+        onClear();
+        finput = load(FileName);
+        pts = finput.pts;
+        adj = finput.adj;
+        label = finput.label;
+        redraw();
     end
 
     function onSelect(~,~)
