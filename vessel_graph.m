@@ -308,7 +308,7 @@ function vessel_graph
 
             else
                 idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
-                adj(labelV{idx,1}, labelV{idx,2}) = 0;
+                adjV(labelV{idx,1}, labelV{idx,2}) = 0;
                 labelV(idx,:) = [];
 
                 for q = 1:size(labelV,1)                
