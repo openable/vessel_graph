@@ -1,34 +1,4 @@
 function vessel_graph
-%     http://stackoverflow.com/questions/17029214/mathematic-graphs-with-matlab-gui
-%
-%     It all boils down to handling the ButtonDownFcn callback of the axis object,
-%     and querying the location of the last mouse click using the CurrentPoint property.
-% 
-%     Here is a list of the possible ways to interact with the GUI:
-% 
-%     - left-click inside the axis to create vertices
-%     - right-click on two nodes to create an edge
-%     - use the listbox to select and highlight nodes.
-%       Use the "delete" button to remove the selected vertex.
-%     - The "clear" button resets everything
-%     - The "export" button create two variables in the base workspace
-%       containing the vertices 2D coordinates (N-by-2 matrix) and
-%       the edges (as a sparse N-by-N matrix).
-%       You can use those variables with other graph functions as usual:
-%         gplot(adj, xy, 'b.-')
-%     - Finally you can right click on the listbox.
-%       This will bring up a popup menu, containing the option
-%       to display labels for the vertices.
-% 
-%     You can extend the above code to assign values to vertices.
-%     For example you could use the callback function of the listbox
-%     to assign values to vertices (display an input dialog
-%     when the user selects an item from the list).
-%     You could also use the same technique shown of
-%     handling the ButtonDownFcn callback.
-%     Similarly you could create a second listbox to display the edges
-%     and handle the assignment of values in the same manner... I will that part to you :)
-
     % data
     showVertices = true;   % flag to determine whether to show node labels
     prevIdx = [];         % keeps track of 1st node clicked in creating edges
@@ -63,15 +33,15 @@ function vessel_graph
         h.lable_edit = uicontrol('Style','edit', 'Parent',h.fig, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
             'Position',[60 140 60 20]);
-        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Set', ...
-            'Position',[125 140 25 20], 'Callback',@onLabelSet);
-        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Delete', ...
-            'Position',[20 110 130 20], 'Callback',@onDelete);
-        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Clear', ...
+        h.labelSet = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Set', ...
+            'Position',[125 140 25 20], 'Callback',@onLabelSet, 'Enable', 'off');
+        h.delete = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Delete', ...
+            'Position',[20 110 130 20], 'Callback',@onDelete, 'Enable', 'off');
+        h.clear = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Clear', ...
             'Position',[20 80 130 20], 'Callback',@onClear);
-        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Import', ...
+        h.import = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Import', ...
             'Position',[20 50 130 20], 'Callback',@onImport);
-        uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Export', ...
+        h.export = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','Export', ...
             'Position',[20 20 130 20], 'Callback',@onExport);
 
 
@@ -146,6 +116,7 @@ function vessel_graph
             % hit test (find node closest to click location: euclidean distnce)
             [dst,idx] = min(sum(bsxfun(@minus, pts, p(1,1:2)).^2,2));
             if sqrt(dst) > 8, return; end
+            set(h.delete, 'Enable', 'on')
 
             if isempty(prevIdx)
                 % starting node (requires a second click to finish)
@@ -158,6 +129,7 @@ function vessel_graph
                 label{m+1,2} = idx;
                 label{m+1,3} = strcat('E', num2str(m+1));
                 prevIdx = [];
+                set(h.delete, 'Enable', 'off')
             end
         end
 
@@ -171,34 +143,51 @@ function vessel_graph
         if isempty(pts), return; end
 
         % delete selected node
-        if isempty(prevIdx)             % 마우스 오른쪽 클릭으로도 지울 수 있게.
-            idx = get(h.list, 'Value');
-        else
+        if ~isempty(prevIdx)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
             idx = prevIdx;
-            prevIdx = [];
-        end
-        pts(idx,:) = [];
-        % 선분 삭제 단계
-        adj(:,idx) = [];
-        adj(idx,:) = [];
-        rowList = [];
-        for q = 1:size(label,1)
-            if label{q,1} == idx || label{q,2} == idx
-                rowList = [rowList q];
+%            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
+            
+            % 꼭지점 삭제 단계
+            pts(idx,:) = [];
+            
+            % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
+            adj(:,idx) = [];
+            adj(idx,:) = [];
+            
+            rowList = [];
+            for q = 1:size(label,1)
+                if label{q,1} == idx || label{q,2} == idx
+                    rowList = [rowList q];
+                end
             end
-        end
-        label(rowList,:) = [];
-        for q = 1:size(label,1)
-            if label{q,1} > idx
-                label{q,1} = label{q,1}-1;
+            label(rowList,:) = [];
+            for q = 1:size(label,1)
+                if label{q,1} > idx
+                    label{q,1} = label{q,1}-1;
+                end
+                
+                if label{q,2} > idx
+                    label{q,2} = label{q,2}-1;
+                end
+                
+                if isempty(label{q,4}) || label{q,4} == 0
+                    label{q,3} = ['E' num2str(q)];
+                end
             end
             
-            if label{q,2} > idx
-                label{q,2} = label{q,2}-1;
+        else
+            idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
+            try
+                adj(label{idx,1}, label{idx,2}) = 0;
+            catch
+                adj(label{idx,2}, label{idx,1}) = 0;
             end
+            label(idx,:) = [];
             
-            if isempty(label{q,4}) || label{q,4} == 0
-                label{q,3} = ['E' num2str(q)];
+            for q = 1:size(label,1)                
+                if isempty(label{q,4}) || label{q,4} == 0
+                    label{q,3} = ['E' num2str(q)];
+                end
             end
         end
         
@@ -208,9 +197,19 @@ function vessel_graph
             prevIdx = [];
         end
         selectIdx = [];
+        
+        if strcmp(get(h.lable_edit, 'Enable'), 'on')
+            set(h.lable_edit, 'String', '')
+            set(h.lable_edit, 'Enable', 'off')
+        end
+        
+        if strcmp(get(h.labelSet, 'Enable'), 'on')
+            set(h.labelSet, 'Enable', 'off')
+        end
 
         % update GUI
         set(h.list, 'Value',1)
+        set(h.delete, 'Enable', 'off')
         redraw()
     end
 
@@ -235,9 +234,12 @@ function vessel_graph
 
     function onSelect(~,~)
         % update index of currently selected node
+        prevIdx = [];
         selectIdx = get(h.list, 'Value');
         set(h.lable_edit, 'String', label{selectIdx, 3})
         set(h.lable_edit, 'Enable', 'on')
+        set(h.delete, 'Enable', 'on')
+        set(h.labelSet, 'Enable', 'on')
         redraw()
     end
 
@@ -256,9 +258,11 @@ function vessel_graph
         
         label{selectIdx,3} = get(h.lable_edit, 'String');
         label{selectIdx,4} = 1;
+        
         selectIdx = [];
         set(h.lable_edit, 'String', '')
         set(h.lable_edit, 'Enable', 'off')
+        set(h.labelSet, 'Enable', 'off')
         redraw()
     end
 
