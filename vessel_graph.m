@@ -235,6 +235,8 @@ function vessel_graph
     function onSelect(~,~)
         % update index of currently selected node
         prevIdx = [];
+        if size(get(h.list, 'String'), 1) == 0, return; end
+        
         selectIdx = get(h.list, 'Value');
         set(h.lable_edit, 'String', label{selectIdx, 3})
         set(h.lable_edit, 'Enable', 'on')
