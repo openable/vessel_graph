@@ -386,7 +386,6 @@ function vessel_graph
         prevIdx = [];
         prevIdxV = [];
         if ~isempty(get(h.list, 'String'))
-        
             if vesselState
                 selectIdx = get(h.list, 'Value');
                 set(h.lable_edit, 'String', label{selectIdx, 3})
@@ -398,6 +397,8 @@ function vessel_graph
             set(h.lable_edit, 'Enable', 'on')
             set(h.delete, 'Enable', 'on')
             set(h.labelSet, 'Enable', 'on')
+        else
+            set(h.list, 'Value', -1)
         end
         
         redraw()
@@ -474,10 +475,13 @@ function vessel_graph
         end
         
         % 혈관 이름 (선분) 목록 출력
+
         if vesselState
+            if size(label,1) == 1, set(h.list, 'Value', 1); end
             % 동맥 이름 출력
             set(h.list, 'String', strcat(num2str((1:size(label,1))'), ': ', label(:,3)))
         else
+            if size(labelV,1) == 1, set(h.list, 'Value', 1); end
             % 정맥 이름 출력
             set(h.list, 'String', strcat(num2str((1:size(labelV,1))'), ': ', labelV(:,3)))
         end
