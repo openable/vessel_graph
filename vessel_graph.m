@@ -385,19 +385,21 @@ function vessel_graph
         % update index of currently selected node
         prevIdx = [];
         prevIdxV = [];
-        if size(get(h.list, 'String'), 1) == 0, return; end
+        if ~isempty(get(h.list, 'String'))
         
-        if vesselState
-            selectIdx = get(h.list, 'Value');
-            set(h.lable_edit, 'String', label{selectIdx, 3})
-        else
-            selectIdxV = get(h.list, 'Value');
-            set(h.lable_edit, 'String', labelV{selectIdxV, 3})
+            if vesselState
+                selectIdx = get(h.list, 'Value');
+                set(h.lable_edit, 'String', label{selectIdx, 3})
+            else
+                selectIdxV = get(h.list, 'Value');
+                set(h.lable_edit, 'String', labelV{selectIdxV, 3})
+            end
+
+            set(h.lable_edit, 'Enable', 'on')
+            set(h.delete, 'Enable', 'on')
+            set(h.labelSet, 'Enable', 'on')
         end
         
-        set(h.lable_edit, 'Enable', 'on')
-        set(h.delete, 'Enable', 'on')
-        set(h.labelSet, 'Enable', 'on')
         redraw()
     end
 
@@ -472,6 +474,7 @@ function vessel_graph
         end
         
         % 혈관 이름 (선분) 목록 출력
+        set(h.list, 'String', 'aa')
         if vesselState
             % 동맥 이름 출력
             set(h.list, 'String', strcat(num2str((1:size(label,1))'), ': ', label(:,3)))
