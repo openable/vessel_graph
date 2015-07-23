@@ -159,7 +159,7 @@ function vessel_graph
                         m = size(label,1);
                         label{m+1,1} = prevIdx;
                         label{m+1,2} = idx;
-                        label{m+1,3} = strcat('E', num2str(m+1));
+                        label{m+1,3} = strcat('A', num2str(m+1));
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
@@ -191,7 +191,7 @@ function vessel_graph
                         m = size(labelV,1);
                         labelV{m+1,1} = prevIdxV;
                         labelV{m+1,2} = idx;
-                        labelV{m+1,3} = strcat('E', num2str(m+1));
+                        labelV{m+1,3} = strcat('V', num2str(m+1));
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
@@ -241,7 +241,7 @@ function vessel_graph
                     end
 
                     if isempty(label{q,4}) || label{q,4} == 0
-                        label{q,3} = ['E' num2str(q)];
+                        label{q,3} = ['A' num2str(q)];
                     end
                 end
 
@@ -252,7 +252,7 @@ function vessel_graph
 
                 for q = 1:size(label,1)                
                     if isempty(label{q,4}) || label{q,4} == 0
-                        label{q,3} = ['E' num2str(q)];
+                        label{q,3} = ['A' num2str(q)];
                     end
                 end
             end
@@ -302,7 +302,7 @@ function vessel_graph
                     end
 
                     if isempty(labelV{q,4}) || labelV{q,4} == 0
-                        labelV{q,3} = ['E' num2str(q)];
+                        labelV{q,3} = ['V' num2str(q)];
                     end
                 end
 
@@ -313,7 +313,7 @@ function vessel_graph
 
                 for q = 1:size(labelV,1)                
                     if isempty(labelV{q,4}) || labelV{q,4} == 0
-                        labelV{q,3} = ['E' num2str(q)];
+                        labelV{q,3} = ['V' num2str(q)];
                     end
                 end
             end
@@ -492,7 +492,7 @@ function vessel_graph
         if showVertices
             set(h.menu, 'Checked','on')
             h.vertices = text(pts(:,1)+2.5, pts(:,2)+2.5, ...
-                strcat('V', num2str((1:size(pts,1))')), ...
+                strcat('a', num2str((1:size(pts,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', 'b', 'FontWeight', 'bold', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
         else
@@ -503,7 +503,7 @@ function vessel_graph
         if showVertices
             set(h.menu, 'Checked','on')
             h.verticesV = text(ptsV(:,1)+2.5, ptsV(:,2)+2.5, ...
-                strcat('V', num2str((1:size(ptsV,1))')), ...
+                strcat('v', num2str((1:size(ptsV,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', 'r', 'FontWeight', 'bold', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
         else
