@@ -362,7 +362,7 @@ function vessel_graph
 
     function onExport(~,~)
         fname = datestr(now,'yymmddHHMMSS');
-        uisave({'pts', 'adj', 'label', 'ptsV', 'adjV', 'labelV'}, ['VG_' fname]);
+        uisave({'ptsAtery', 'adjAtery', 'labelAtery', 'ptsVein', 'adjVein', 'labelVein'}, ['VG_' fname]);
     end
 
     function onImport(~,~)
@@ -370,13 +370,13 @@ function vessel_graph
         onClear();
         finput = load(FileName);
         
-        ptsAtery = finput.pts;
-        adjAtery = finput.adj;
-        labelAtery = finput.label;
+        ptsAtery = finput.ptsAtery;
+        adjAtery = finput.adjAtery;
+        labelAtery = finput.labelAtery;
         
-        ptsVein = finput.ptsV;
-        adjVein = finput.adjV;
-        labelVein = finput.labelV;
+        ptsVein = finput.ptsVein;
+        adjVein = finput.adjVein;
+        labelVein = finput.labelVein;
         
         redraw();
     end
