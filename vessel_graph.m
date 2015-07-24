@@ -2,19 +2,19 @@ function vessel_graph
     % data
     showVertices = true;   % flag to determine whether to show node labels
 
-    prevIdx = [];         % keeps track of 1st node clicked in creating edges
-    selectIdx = [];       % used to highlight node selected in listbox
+    prevIdxAtery = [];         % keeps track of 1st node clicked in creating edges
+    selectIdxAtery = [];       % used to highlight node selected in listbox
 
-    pts = zeros(0,2);     % x/y coordinates of vertices
-    adj = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-    label = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+    ptsAtery = zeros(0,2);     % x/y coordinates of vertices
+    adjAtery = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+    labelAtery = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
 
-    prevIdxV = [];
-    selectIdxV = [];
+    prevIdxVein = [];
+    selectIdxVein = [];
     
-    ptsV = zeros(0,2);     % x/y coordinates of vertices
-    adjV = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-    labelV = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+    ptsVein = zeros(0,2);     % x/y coordinates of vertices
+    adjVein = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+    labelVein = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
     
     vesselState = 1;        % Artery (1) / Vein (0) state
     
@@ -111,12 +111,12 @@ function vessel_graph
     function setCategory()
         if h.rA.Value == 1
             vesselState = 1;
-            prevIdxV = [];
-            selectIdxV = [];
+            prevIdxVein = [];
+            selectIdxVein = [];
         else    %h.rV.Value == 1
             vesselState = 0;
-            prevIdx = [];
-            selectIdx = [];
+            prevIdxAtery = [];
+            selectIdxAtery = [];
         end
         
         set(h.lable_edit, 'String', '')
@@ -139,31 +139,31 @@ function vessel_graph
             % 동맥 처리 (Atery)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % add a new node
-                pts(end+1,:) = p(1,1:2);
-                adj(end+1,end+1) = 0;
+                ptsAtery(end+1,:) = p(1,1:2);
+                adjAtery(end+1,end+1) = 0;
             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
                 onLabelEdit();
             else
                 % hit test (find node closest to click location: euclidean distnce)
-                [dst,idx] = min(sum(bsxfun(@minus, pts, p(1,1:2)).^2,2));
+                [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
                 if sqrt(dst) > 8, return; end
                 set(h.delete, 'Enable', 'on')
 
-                if isempty(prevIdx)
+                if isempty(prevIdxAtery)
                     % starting node (requires a second click to finish)
-                    prevIdx = idx;
+                    prevIdxAtery = idx;
                 else
                     % add the new edge % 선분 생성 단계
-                    if adj(prevIdx,idx) ~= 1 && adj(idx,prevIdx) ~= 1
-                        adj(prevIdx,idx) = 1;
-                        m = size(label,1);
-                        label{m+1,1} = prevIdx;
-                        label{m+1,2} = idx;
-                        label{m+1,3} = strcat('A', num2str(m+1));
+                    if adjAtery(prevIdxAtery,idx) ~= 1 && adjAtery(idx,prevIdxAtery) ~= 1
+                        adjAtery(prevIdxAtery,idx) = 1;
+                        m = size(labelAtery,1);
+                        labelAtery{m+1,1} = prevIdxAtery;
+                        labelAtery{m+1,2} = idx;
+                        labelAtery{m+1,3} = strcat('A', num2str(m+1));
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
-                    prevIdx = [];
+                    prevIdxAtery = [];
                     set(h.delete, 'Enable', 'off')
                 end
             end
@@ -171,98 +171,98 @@ function vessel_graph
             % 정맥 처리 (Vein) 
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % add a new node
-                ptsV(end+1,:) = p(1,1:2);
-                adjV(end+1,end+1) = 0;
+                ptsVein(end+1,:) = p(1,1:2);
+                adjVein(end+1,end+1) = 0;
             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
                 onLabelEdit();
             else
                 % hit test (find node closest to click location: euclidean distnce)
-                [dst,idx] = min(sum(bsxfun(@minus, ptsV, p(1,1:2)).^2,2));
+                [dst,idx] = min(sum(bsxfun(@minus, ptsVein, p(1,1:2)).^2,2));
                 if sqrt(dst) > 8, return; end
                 set(h.delete, 'Enable', 'on')
 
-                if isempty(prevIdxV)
+                if isempty(prevIdxVein)
                     % starting node (requires a second click to finish)
-                    prevIdxV = idx;
+                    prevIdxVein = idx;
                 else
                     % add the new edge % 선분 생성 단계
-                    if adjV(prevIdxV,idx) ~= 1 && adjV(idx,prevIdxV) ~= 1
-                        adjV(prevIdxV,idx) = 1;
-                        m = size(labelV,1);
-                        labelV{m+1,1} = prevIdxV;
-                        labelV{m+1,2} = idx;
-                        labelV{m+1,3} = strcat('V', num2str(m+1));
+                    if adjVein(prevIdxVein,idx) ~= 1 && adjVein(idx,prevIdxVein) ~= 1
+                        adjVein(prevIdxVein,idx) = 1;
+                        m = size(labelVein,1);
+                        labelVein{m+1,1} = prevIdxVein;
+                        labelVein{m+1,2} = idx;
+                        labelVein{m+1,3} = strcat('V', num2str(m+1));
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
-                    prevIdxV = [];
+                    prevIdxVein = [];
                     set(h.delete, 'Enable', 'off')
                 end
             end
         end
 
         % update GUI
-        selectIdx = [];
-        selectIdxV = [];
+        selectIdxAtery = [];
+        selectIdxVein = [];
         redraw()
     end
 
     function onDelete(~,~)
         % check that list of nodes is not empty
-        if isempty(pts) && isempty(ptsV), return; end
+        if isempty(ptsAtery) && isempty(ptsVein), return; end
 
         % delete selected node
         if vesselState
-            if ~isempty(prevIdx)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
-                idx = prevIdx;
+            if ~isempty(prevIdxAtery)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
+                idx = prevIdxAtery;
     %            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
 
                 % 꼭지점 삭제 단계
-                pts(idx,:) = [];
+                ptsAtery(idx,:) = [];
 
                 % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
-                adj(:,idx) = [];
-                adj(idx,:) = [];
+                adjAtery(:,idx) = [];
+                adjAtery(idx,:) = [];
 
                 rowList = [];
-                for q = 1:size(label,1)
-                    if label{q,1} == idx || label{q,2} == idx
+                for q = 1:size(labelAtery,1)
+                    if labelAtery{q,1} == idx || labelAtery{q,2} == idx
                         rowList = [rowList q];
                     end
                 end
-                label(rowList,:) = [];
-                for q = 1:size(label,1)
-                    if label{q,1} > idx
-                        label{q,1} = label{q,1}-1;
+                labelAtery(rowList,:) = [];
+                for q = 1:size(labelAtery,1)
+                    if labelAtery{q,1} > idx
+                        labelAtery{q,1} = labelAtery{q,1}-1;
                     end
 
-                    if label{q,2} > idx
-                        label{q,2} = label{q,2}-1;
+                    if labelAtery{q,2} > idx
+                        labelAtery{q,2} = labelAtery{q,2}-1;
                     end
 
-                    if isempty(label{q,4}) || label{q,4} == 0
-                        label{q,3} = ['A' num2str(q)];
+                    if isempty(labelAtery{q,4}) || labelAtery{q,4} == 0
+                        labelAtery{q,3} = ['A' num2str(q)];
                     end
                 end
 
             else
                 idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
-                adj(label{idx,1}, label{idx,2}) = 0;
-                label(idx,:) = [];
+                adjAtery(labelAtery{idx,1}, labelAtery{idx,2}) = 0;
+                labelAtery(idx,:) = [];
 
-                for q = 1:size(label,1)                
-                    if isempty(label{q,4}) || label{q,4} == 0
-                        label{q,3} = ['A' num2str(q)];
+                for q = 1:size(labelAtery,1)                
+                    if isempty(labelAtery{q,4}) || labelAtery{q,4} == 0
+                        labelAtery{q,3} = ['A' num2str(q)];
                     end
                 end
             end
 
 
             % clear previous selections
-            if prevIdx == idx
-                prevIdx = [];
+            if prevIdxAtery == idx
+                prevIdxAtery = [];
             end
-            selectIdx = [];
+            selectIdxAtery = [];
 
             if strcmp(get(h.lable_edit, 'Enable'), 'on')
                 set(h.lable_edit, 'String', '')
@@ -274,56 +274,56 @@ function vessel_graph
             end
             
         else
-            if ~isempty(prevIdxV)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
-                idx = prevIdxV;
+            if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
+                idx = prevIdxVein;
     %            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
 
                 % 꼭지점 삭제 단계
-                ptsV(idx,:) = [];
+                ptsVein(idx,:) = [];
 
                 % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
-                adjV(:,idx) = [];
-                adjV(idx,:) = [];
+                adjVein(:,idx) = [];
+                adjVein(idx,:) = [];
 
                 rowList = [];
-                for q = 1:size(labelV,1)
-                    if labelV{q,1} == idx || labelV{q,2} == idx
+                for q = 1:size(labelVein,1)
+                    if labelVein{q,1} == idx || labelVein{q,2} == idx
                         rowList = [rowList q];
                     end
                 end
-                labelV(rowList,:) = [];
-                for q = 1:size(labelV,1)
-                    if labelV{q,1} > idx
-                        labelV{q,1} = labelV{q,1}-1;
+                labelVein(rowList,:) = [];
+                for q = 1:size(labelVein,1)
+                    if labelVein{q,1} > idx
+                        labelVein{q,1} = labelVein{q,1}-1;
                     end
 
-                    if labelV{q,2} > idx
-                        labelV{q,2} = labelV{q,2}-1;
+                    if labelVein{q,2} > idx
+                        labelVein{q,2} = labelVein{q,2}-1;
                     end
 
-                    if isempty(labelV{q,4}) || labelV{q,4} == 0
-                        labelV{q,3} = ['V' num2str(q)];
+                    if isempty(labelVein{q,4}) || labelVein{q,4} == 0
+                        labelVein{q,3} = ['V' num2str(q)];
                     end
                 end
 
             else
                 idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
-                adjV(labelV{idx,1}, labelV{idx,2}) = 0;
-                labelV(idx,:) = [];
+                adjVein(labelVein{idx,1}, labelVein{idx,2}) = 0;
+                labelVein(idx,:) = [];
 
-                for q = 1:size(labelV,1)                
-                    if isempty(labelV{q,4}) || labelV{q,4} == 0
-                        labelV{q,3} = ['V' num2str(q)];
+                for q = 1:size(labelVein,1)                
+                    if isempty(labelVein{q,4}) || labelVein{q,4} == 0
+                        labelVein{q,3} = ['V' num2str(q)];
                     end
                 end
             end
 
 
             % clear previous selections
-            if prevIdxV == idx
-                prevIdxV = [];
+            if prevIdxVein == idx
+                prevIdxVein = [];
             end
-            selectIdxV = [];
+            selectIdxVein = [];
 
             if strcmp(get(h.lable_edit, 'Enable'), 'on')
                 set(h.lable_edit, 'String', '')
@@ -343,17 +343,17 @@ function vessel_graph
 
     function onClear(~,~)
         % reset everything
-        prevIdx = [];
-        selectIdx = [];
-        pts = zeros(0,2);
-        adj = sparse([]);
-        label = cell(0,3);      % label 엣지 정보 제거 추가
+        prevIdxAtery = [];
+        selectIdxAtery = [];
+        ptsAtery = zeros(0,2);
+        adjAtery = sparse([]);
+        labelAtery = cell(0,3);      % label 엣지 정보 제거 추가
         
-        prevIdxV = [];
-        selectIdxV = [];
-        ptsV = zeros(0,2);
-        adjV = sparse([]);
-        labelV = cell(0,3);      % label 엣지 정보 제거 추가
+        prevIdxVein = [];
+        selectIdxVein = [];
+        ptsVein = zeros(0,2);
+        adjVein = sparse([]);
+        labelVein = cell(0,3);      % label 엣지 정보 제거 추가
 
         % update GUI
         set(h.list, 'Value',1)
@@ -370,28 +370,28 @@ function vessel_graph
         onClear();
         finput = load(FileName);
         
-        pts = finput.pts;
-        adj = finput.adj;
-        label = finput.label;
+        ptsAtery = finput.pts;
+        adjAtery = finput.adj;
+        labelAtery = finput.label;
         
-        ptsV = finput.ptsV;
-        adjV = finput.adjV;
-        labelV = finput.labelV;
+        ptsVein = finput.ptsV;
+        adjVein = finput.adjV;
+        labelVein = finput.labelV;
         
         redraw();
     end
 
     function onSelect(~,~)
         % update index of currently selected node
-        prevIdx = [];
-        prevIdxV = [];
+        prevIdxAtery = [];
+        prevIdxVein = [];
         if ~isempty(get(h.list, 'String'))
             if vesselState
-                selectIdx = get(h.list, 'Value');
-                set(h.lable_edit, 'String', label{selectIdx, 3})
+                selectIdxAtery = get(h.list, 'Value');
+                set(h.lable_edit, 'String', labelAtery{selectIdxAtery, 3})
             else
-                selectIdxV = get(h.list, 'Value');
-                set(h.lable_edit, 'String', labelV{selectIdxV, 3})
+                selectIdxVein = get(h.list, 'Value');
+                set(h.lable_edit, 'String', labelVein{selectIdxVein, 3})
             end
 
             set(h.lable_edit, 'Enable', 'on')
@@ -418,15 +418,15 @@ function vessel_graph
         if strcmp(set(h.lable_edit, 'Enable'), 'off'), return; end
         
         if vesselState
-            label{selectIdx,3} = get(h.lable_edit, 'String');
-            label{selectIdx,4} = 1;
+            labelAtery{selectIdxAtery,3} = get(h.lable_edit, 'String');
+            labelAtery{selectIdxAtery,4} = 1;
         else
-            labelV{selectIdxV,3} = get(h.lable_edit, 'String');
-            labelV{selectIdxV,4} = 1;
+            labelVein{selectIdxVein,3} = get(h.lable_edit, 'String');
+            labelVein{selectIdxVein,4} = 1;
         end
         
-        selectIdx = [];
-        selectIdxV = [];
+        selectIdxAtery = [];
+        selectIdxVein = [];
         set(h.lable_edit, 'String', '')
         set(h.lable_edit, 'Enable', 'off')
         set(h.labelSet, 'Enable', 'off')
@@ -436,54 +436,54 @@ function vessel_graph
     function redraw()
         % 선분 그리기 단계
         % 동맥
-        p = nan(3*nnz(adj),2);
-        for q = 1:size(label,1)
-            p(1+3*(q-1),:) = pts(label{q,1},:);
-            p(2+3*(q-1),:) = pts(label{q,2},:);
+        p = nan(3*nnz(adjAtery),2);
+        for q = 1:size(labelAtery,1)
+            p(1+3*(q-1),:) = ptsAtery(labelAtery{q,1},:);
+            p(2+3*(q-1),:) = ptsAtery(labelAtery{q,2},:);
         end
         set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
         if ishghandle(h.vessels), delete(h.vessels); end
         h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-             strcat(label(:,3)), ...  % label(:)
+             strcat(labelAtery(:,3)), ...  % label(:)
              'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
         % 정맥
-        p = nan(3*nnz(adjV),2);
-        for q = 1:size(labelV,1)
-            p(1+3*(q-1),:) = ptsV(labelV{q,1},:);
-            p(2+3*(q-1),:) = ptsV(labelV{q,2},:);
+        p = nan(3*nnz(adjVein),2);
+        for q = 1:size(labelVein,1)
+            p(1+3*(q-1),:) = ptsVein(labelVein{q,1},:);
+            p(2+3*(q-1),:) = ptsVein(labelVein{q,2},:);
         end
         set(h.edgesV, 'XData',p(:,1), 'YData',p(:,2))
         if ishghandle(h.vesselsV), delete(h.vesselsV); end
         h.vesselsV = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-             strcat(labelV(:,3)), ...  % labelV(:)
+             strcat(labelVein(:,3)), ...  % labelV(:)
              'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
 
         % 점 그리기 단계
         % 동맥
-        set(h.pts, 'XData', pts(:,1), 'YData',pts(:,2))
-        set(h.prev, 'XData', pts(prevIdx,1), 'YData',pts(prevIdx,2))
-        if ~isempty(selectIdx)
-            set(h.vessels(selectIdx), 'Color', 'y')
+        set(h.pts, 'XData', ptsAtery(:,1), 'YData',ptsAtery(:,2))
+        set(h.prev, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
+        if ~isempty(selectIdxAtery)
+            set(h.vessels(selectIdxAtery), 'Color', 'y')
         end       
         % 정맥
-        set(h.ptsV, 'XData', ptsV(:,1), 'YData',ptsV(:,2))
-        set(h.prevV, 'XData', ptsV(prevIdxV,1), 'YData', ptsV(prevIdxV,2))
-        if ~isempty(selectIdxV)
-            set(h.vesselsV(selectIdxV), 'Color', 'y')
+        set(h.ptsV, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
+        set(h.prevV, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
+        if ~isempty(selectIdxVein)
+            set(h.vesselsV(selectIdxVein), 'Color', 'y')
         end
         
         % 혈관 이름 (선분) 목록 출력
 
         if vesselState
-            if size(label,1) == 1, set(h.list, 'Value', 1); end
+            if size(labelAtery,1) == 1, set(h.list, 'Value', 1); end
             % 동맥 이름 출력
-            set(h.list, 'String', strcat(num2str((1:size(label,1))'), ': ', label(:,3)))
+            set(h.list, 'String', strcat(num2str((1:size(labelAtery,1))'), ': ', labelAtery(:,3)))
         else
-            if size(labelV,1) == 1, set(h.list, 'Value', 1); end
+            if size(labelVein,1) == 1, set(h.list, 'Value', 1); end
             % 정맥 이름 출력
-            set(h.list, 'String', strcat(num2str((1:size(labelV,1))'), ': ', labelV(:,3)))
+            set(h.list, 'String', strcat(num2str((1:size(labelVein,1))'), ': ', labelVein(:,3)))
         end
 
         % 꼭지점 이름 출력
@@ -491,8 +491,8 @@ function vessel_graph
         if ishghandle(h.vertices), delete(h.vertices); end
         if showVertices
             set(h.menu, 'Checked','on')
-            h.vertices = text(pts(:,1)+2.5, pts(:,2)+2.5, ...
-                strcat('a', num2str((1:size(pts,1))')), ...
+            h.vertices = text(ptsAtery(:,1)+2.5, ptsAtery(:,2)+2.5, ...
+                strcat('a', num2str((1:size(ptsAtery,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', 'b', 'FontWeight', 'bold', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
         else
@@ -502,8 +502,8 @@ function vessel_graph
         if ishghandle(h.verticesV), delete(h.verticesV); end
         if showVertices
             set(h.menu, 'Checked','on')
-            h.verticesV = text(ptsV(:,1)+2.5, ptsV(:,2)+2.5, ...
-                strcat('v', num2str((1:size(ptsV,1))')), ...
+            h.verticesV = text(ptsVein(:,1)+2.5, ptsVein(:,2)+2.5, ...
+                strcat('v', num2str((1:size(ptsVein,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', 'r', 'FontWeight', 'bold', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
         else
