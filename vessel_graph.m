@@ -38,14 +38,14 @@ function vessel_graph
         h.list = uicontrol('Style','listbox', 'Parent',h.fig, 'String',{}, ...
             'Min',0, 'Max',1, 'Value',1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
             'Position',[20 170 130 620], 'Callback',@onSelect); % 140
-        h.lable_text = uicontrol('Style','text', 'Parent',h.fig, 'String',{}, ...
+        h.labelText = uicontrol('Style','text', 'Parent',h.fig, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
             'Position',[20 140 40 20]);
-        h.lable_edit = uicontrol('Style','edit', 'Parent',h.fig, 'String',{}, ...
+        h.labelEdit = uicontrol('Style','edit', 'Parent',h.fig, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 140 60 20]);
+            'Position',[60 140 60 20], 'KeyPressFcn',@onEnterEdit);
         h.labelSet = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','설정', ...
-            'Position',[125 140 25 20], 'Callback',@onLabelSet, 'Enable', 'off');
+            'Position',[125 140 25 20], 'Callback',@onLabelSet, 'Enable', 'off', 'KeyPressFcn',@onEnterSet);
         h.delete = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','점/선분 삭제', ...
             'Position',[20 110 130 20], 'Callback',@onDelete, 'Enable', 'off');
         h.clear = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','초기화', ...
@@ -119,8 +119,8 @@ function vessel_graph
             selectIdxAtery = [];
         end
         
-        set(h.lable_edit, 'String', '')
-        set(h.lable_edit, 'Enable', 'off')
+        set(h.labelEdit, 'String', '')
+        set(h.labelEdit, 'Enable', 'off')
         set(h.labelSet, 'Enable', 'off')
         set(h.delete, 'Enable', 'off')
         redraw()
@@ -128,9 +128,9 @@ function vessel_graph
 
     function onMouseDown(~,~)
         % get location of mouse click (in data coordinates)
-        if strcmp(get(h.lable_edit, 'Enable'), 'on')
-            set(h.lable_edit, 'String', '')
-            set(h.lable_edit, 'Enable', 'off')
+        if strcmp(get(h.labelEdit, 'Enable'), 'on')
+            set(h.labelEdit, 'String', '')
+            set(h.labelEdit, 'Enable', 'off')
         end
         
         p = get(h.ax, 'CurrentPoint');
@@ -264,9 +264,9 @@ function vessel_graph
             end
             selectIdxAtery = [];
 
-            if strcmp(get(h.lable_edit, 'Enable'), 'on')
-                set(h.lable_edit, 'String', '')
-                set(h.lable_edit, 'Enable', 'off')
+            if strcmp(get(h.labelEdit, 'Enable'), 'on')
+                set(h.labelEdit, 'String', '')
+                set(h.labelEdit, 'Enable', 'off')
             end
 
             if strcmp(get(h.labelSet, 'Enable'), 'on')
@@ -325,9 +325,9 @@ function vessel_graph
             end
             selectIdxVein = [];
 
-            if strcmp(get(h.lable_edit, 'Enable'), 'on')
-                set(h.lable_edit, 'String', '')
-                set(h.lable_edit, 'Enable', 'off')
+            if strcmp(get(h.labelEdit, 'Enable'), 'on')
+                set(h.labelEdit, 'String', '')
+                set(h.labelEdit, 'Enable', 'off')
             end
 
             if strcmp(get(h.labelSet, 'Enable'), 'on')
@@ -385,22 +385,26 @@ function vessel_graph
         % update index of currently selected node
         prevIdxAtery = [];
         prevIdxVein = [];
+        
+        % 리스트 박스가 비었을 때 (초기 생성, 삭제하다가 모든 아이템 삭제) Value 값 조절
         if ~isempty(get(h.list, 'String'))
             if vesselState
                 selectIdxAtery = get(h.list, 'Value');
-                set(h.lable_edit, 'String', labelAtery{selectIdxAtery, 3})
+                set(h.labelEdit, 'String', labelAtery{selectIdxAtery, 3})
             else
                 selectIdxVein = get(h.list, 'Value');
-                set(h.lable_edit, 'String', labelVein{selectIdxVein, 3})
+                set(h.labelEdit, 'String', labelVein{selectIdxVein, 3})
             end
 
-            set(h.lable_edit, 'Enable', 'on')
+            set(h.labelEdit, 'Enable', 'on')
             set(h.delete, 'Enable', 'on')
             set(h.labelSet, 'Enable', 'on')
         else
             set(h.list, 'Value', -1)
         end
         
+        % 선분 라벨 편집 text editor에 커서 자동 위치
+        uicontrol(h.labelEdit);
         redraw()
     end
 
@@ -411,26 +415,46 @@ function vessel_graph
     end
 
     function onLabelEdit(~,~)
-        set(h.lable_edit, 'Enable', 'on');
+        set(h.labelEdit, 'Enable', 'on');
     end
 
     function onLabelSet(~,~)
-        if strcmp(set(h.lable_edit, 'Enable'), 'off'), return; end
+        if strcmp(set(h.labelEdit, 'Enable'), 'off'), return; end
         
         if vesselState
-            labelAtery{selectIdxAtery,3} = get(h.lable_edit, 'String');
+            labelAtery{selectIdxAtery,3} = get(h.labelEdit, 'String');
             labelAtery{selectIdxAtery,4} = 1;
         else
-            labelVein{selectIdxVein,3} = get(h.lable_edit, 'String');
+            labelVein{selectIdxVein,3} = get(h.labelEdit, 'String');
             labelVein{selectIdxVein,4} = 1;
         end
         
         selectIdxAtery = [];
         selectIdxVein = [];
-        set(h.lable_edit, 'String', '')
-        set(h.lable_edit, 'Enable', 'off')
+        set(h.labelEdit, 'String', '')
+        set(h.labelEdit, 'Enable', 'off')
         set(h.labelSet, 'Enable', 'off')
         redraw()
+    end
+
+    function onEnterEdit(~,~)
+        % text edit 창에서 엔터 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+ 
+        if isequal(key,char(13))
+            % 포커스를 옆에 set 버튼으로 이동, 그래야 현재 편집 정보 반영 됨
+            uicontrol(h.labelSet);
+            onLabelSet();
+        end
+    end
+
+    function onEnterSet(~,~)
+        % set 버튼 포커스 후 엔터 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+ 
+        if isequal(key,char(13))
+            onLabelSet();
+        end
     end
 
     function redraw()
