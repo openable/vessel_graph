@@ -374,7 +374,11 @@ function vessel_graph
         labelVein = cell(0,3);      % label 엣지 정보 제거 추가
 
         % update GUI
-        set(h.list, 'Value',1)
+        set(h.labelEdit, 'String', '')
+        set(h.labelEdit, 'Enable', 'off')
+        set(h.labelSet, 'Enable', 'off')
+        set(h.delete, 'Enable', 'off')
+        set(h.list, 'Value', -1)
         redraw()
     end
 
@@ -396,6 +400,7 @@ function vessel_graph
         adjVein = finput.adjVein;
         labelVein = finput.labelVein;
         
+        set(h.list, 'Value', 1)
         redraw();
     end
 
