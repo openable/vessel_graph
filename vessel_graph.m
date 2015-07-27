@@ -64,38 +64,38 @@ function vessel_graph
 
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.pts = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.ptsAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
-        h.prev = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.prevAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 선분 목록
-        h.edges = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.edgesAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
-        h.vertices = [];
+        h.verticesAtery = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
-        h.vessels = [];
+        h.vesselsAtery = [];
         
         
         % 정맥 (Vein)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsV = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.ptsVein = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
-        h.prevV = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.prevVein = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 선분 목록
-        h.edgesV = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.edgesVein = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','b');
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
-        h.verticesV = [];
+        h.verticesVein = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
-        h.vesselsV = [];
+        h.vesselsAteryV = [];
     end
 
     function onFigKey(~,~)
@@ -159,8 +159,16 @@ function vessel_graph
                 % add a new node
                 ptsAtery(end+1,:) = p(1,1:2);
                 adjAtery(end+1,end+1) = 0;
+                
+                selectIdxAtery = [];
+                selectIdxVein = [];
             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
-                onLabelEdit();
+                if size(labelAtery,1) < 1, return; end
+                labelPts = getLabelPts(ptsAtery, labelAtery);
+                [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
+
+                if sqrt(dst) > 20, selectIdxAtery = []; setCategory(); return; end
+                onLabelEdit(idx);
             else
                 % hit test (find node closest to click location: euclidean distnce)
                 [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
@@ -184,6 +192,9 @@ function vessel_graph
                     prevIdxAtery = [];
                     set(h.delete, 'Enable', 'off')
                 end
+                
+                selectIdxAtery = [];
+                selectIdxVein = [];
             end
         else
             % 정맥 처리 (Vein) 
@@ -191,8 +202,16 @@ function vessel_graph
                 % add a new node
                 ptsVein(end+1,:) = p(1,1:2);
                 adjVein(end+1,end+1) = 0;
+                
+                selectIdxAtery = [];
+                selectIdxVein = [];
             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
-                onLabelEdit();
+                if size(labelVein,1) < 1, return; end
+                labelPts = getLabelPts(ptsVein, labelVein);
+                [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
+
+                if sqrt(dst) > 20, selectIdxVein = []; setCategory(); return; end
+                onLabelEdit(idx);
             else
                 % hit test (find node closest to click location: euclidean distnce)
                 [dst,idx] = min(sum(bsxfun(@minus, ptsVein, p(1,1:2)).^2,2));
@@ -216,13 +235,23 @@ function vessel_graph
                     prevIdxVein = [];
                     set(h.delete, 'Enable', 'off')
                 end
+                
+                selectIdxAtery = [];
+                selectIdxVein = [];
             end
         end
 
         % update GUI
-        selectIdxAtery = [];
-        selectIdxVein = [];
         redraw()
+    end
+
+    function mat = getLabelPts(pts, label)
+        mat = zeros(size(label,1),2);
+        for n = 1:size(label,1)
+            % x축 좌표는 10씩 일부러 옮겨줌. 라벨 출력이 좌측 정렬로 써져서 보정.
+            mat(n,1) = (pts(label{n,1},1) + pts(label{n,2},1))/2 + 8 + 10;
+            mat(n,2) = (pts(label{n,1},2) + pts(label{n,2},2))/2 + 8;
+        end
     end
 
     function onDelete(~,~)
@@ -294,7 +323,6 @@ function vessel_graph
         else
             if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxVein;
-    %            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
 
                 % 꼭지점 삭제 단계
                 ptsVein(idx,:) = [];
@@ -437,8 +465,24 @@ function vessel_graph
         redraw()
     end
 
-    function onLabelEdit(~,~)
-        set(h.labelEdit, 'Enable', 'on');
+    function onLabelEdit(idx)
+        prevIdxAtery = [];
+        prevIdxVein = [];
+        
+        if vesselState
+            selectIdxAtery = idx;
+            set(h.labelEdit, 'String', labelAtery{selectIdxAtery, 3})
+        else
+            selectIdxVein = idx;
+            set(h.labelEdit, 'String', labelVein{selectIdxVein, 3})
+        end
+        
+        set(h.list, 'Value', idx)
+        set(h.labelEdit, 'Enable', 'on')
+        set(h.delete, 'Enable', 'on')
+        set(h.labelSet, 'Enable', 'on')
+        uicontrol(h.labelEdit);
+        redraw()
     end
 
     function onLabelSet(~,~)
@@ -497,38 +541,39 @@ function vessel_graph
             p(1+3*(q-1),:) = ptsAtery(labelAtery{q,1},:);
             p(2+3*(q-1),:) = ptsAtery(labelAtery{q,2},:);
         end
-        set(h.edges, 'XData',p(:,1), 'YData',p(:,2))
-        if ishghandle(h.vessels), delete(h.vessels); end
-        h.vessels = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+        set(h.edgesAtery, 'XData',p(:,1), 'YData',p(:,2))
+        if ishghandle(h.vesselsAtery), delete(h.vesselsAtery); end
+        h.vesselsAtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
              strcat(labelAtery(:,3)), ...  % label(:)
              'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
+        if ~isempty(selectIdxAtery)
+            set(h.vesselsAtery(selectIdxAtery), 'Color', 'g')
+        end   
         % 정맥
         p = nan(3*nnz(adjVein),2);
         for q = 1:size(labelVein,1)
             p(1+3*(q-1),:) = ptsVein(labelVein{q,1},:);
             p(2+3*(q-1),:) = ptsVein(labelVein{q,2},:);
         end
-        set(h.edgesV, 'XData',p(:,1), 'YData',p(:,2))
-        if ishghandle(h.vesselsV), delete(h.vesselsV); end
-        h.vesselsV = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+        set(h.edgesVein, 'XData',p(:,1), 'YData',p(:,2))
+        if ishghandle(h.vesselsAteryV), delete(h.vesselsAteryV); end
+        h.vesselsAteryV = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
              strcat(labelVein(:,3)), ...  % labelV(:)
              'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
-
+        if ~isempty(selectIdxVein)
+            set(h.vesselsAteryV(selectIdxVein), 'Color', 'g')
+        end
+         
         % 점 그리기 단계
         % 동맥
-        set(h.pts, 'XData', ptsAtery(:,1), 'YData',ptsAtery(:,2))
-        set(h.prev, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
-        if ~isempty(selectIdxAtery)
-            set(h.vessels(selectIdxAtery), 'Color', 'g')
-        end       
+        set(h.ptsAtery, 'XData', ptsAtery(:,1), 'YData',ptsAtery(:,2))
+        set(h.prevAtery, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
+    
         % 정맥
-        set(h.ptsV, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
-        set(h.prevV, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
-        if ~isempty(selectIdxVein)
-            set(h.vesselsV(selectIdxVein), 'Color', 'g')
-        end
+        set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
+        set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
         
         % 혈관 이름 (선분) 목록 출력
         if vesselState
@@ -543,10 +588,10 @@ function vessel_graph
 
         % 꼭지점 이름 출력
         % 동맥
-        if ishghandle(h.vertices), delete(h.vertices); end
+        if ishghandle(h.verticesAtery), delete(h.verticesAtery); end
         if showVertices
             set(h.menu, 'Checked','on')
-            h.vertices = text(ptsAtery(:,1)+2.5, ptsAtery(:,2)+2.5, ...
+            h.verticesAtery = text(ptsAtery(:,1)+2.5, ptsAtery(:,2)+2.5, ...
                 strcat('a', num2str((1:size(ptsAtery,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
@@ -554,10 +599,10 @@ function vessel_graph
             set(h.menu, 'Checked','off')
         end
         % 정맥
-        if ishghandle(h.verticesV), delete(h.verticesV); end
+        if ishghandle(h.verticesVein), delete(h.verticesVein); end
         if showVertices
             set(h.menu, 'Checked','on')
-            h.verticesV = text(ptsVein(:,1)+2.5, ptsVein(:,2)+2.5, ...
+            h.verticesVein = text(ptsVein(:,1)+2.5, ptsVein(:,2)+2.5, ...
                 strcat('v', num2str((1:size(ptsVein,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
