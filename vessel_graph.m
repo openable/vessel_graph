@@ -7,14 +7,14 @@ function vessel_graph
 
     ptsAtery = zeros(0,2);     % x/y coordinates of vertices
     adjAtery = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-    labelAtery = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+    labelAtery = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
 
     prevIdxVein = [];
     selectIdxVein = [];
     
     ptsVein = zeros(0,2);     % x/y coordinates of vertices
     adjVein = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-    labelVein = cell(0,4);      % 선분 레이블 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+    labelVein = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
     
     vesselState = 1;        % Artery (1) / Vein (0) state
     
@@ -25,7 +25,7 @@ function vessel_graph
     function h = initGUI()
         scr = get(groot,'ScreenSize');
         h.fig = figure('Name','Vessel Graph', 'Resize','off', 'Position', ...
-            [((scr(3)-980)/2) ((scr(4)-840)/2) 980 840]);
+            [((scr(3)-980)/2) ((scr(4)-840)/2) 980 840], 'KeyPressFcn',@onFigKey);
         h.ax = axes('Parent',h.fig, 'ButtonDownFcn',@onMouseDown, ...
             'XLim',[0 1000], 'YLim',[0 1000], 'XTick',[], 'YTick',[], 'Box','on', ...
             'Units','pixels', 'Position',[160 20 800 800]);
@@ -36,16 +36,16 @@ function vessel_graph
         h.rV = uicontrol('Style','radiobutton', 'Parent',h.fig, 'String','Vein', ...
             'Position',[90 800 60 20],'Callback',@onVein);
         h.list = uicontrol('Style','listbox', 'Parent',h.fig, 'String',{}, ...
-            'Min',0, 'Max',1, 'Value',1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
+            'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
             'Position',[20 170 130 620], 'Callback',@onSelect); % 140
         h.labelText = uicontrol('Style','text', 'Parent',h.fig, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
             'Position',[20 140 40 20]);
         h.labelEdit = uicontrol('Style','edit', 'Parent',h.fig, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 140 60 20], 'KeyPressFcn',@onEnterEdit);
+            'Position',[60 140 60 20], 'KeyPressFcn',@onEditKey);
         h.labelSet = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','설정', ...
-            'Position',[125 140 25 20], 'Callback',@onLabelSet, 'Enable', 'off', 'KeyPressFcn',@onEnterSet);
+            'Position',[125 140 25 20], 'Callback',@onLabelSet, 'Enable', 'off', 'KeyPressFcn',@onSetKey);
         h.delete = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','점/선분 삭제', ...
             'Position',[20 110 130 20], 'Callback',@onDelete, 'Enable', 'off');
         h.clear = uicontrol('Style','pushbutton', 'Parent',h.fig, 'String','초기화', ...
@@ -96,6 +96,24 @@ function vessel_graph
         h.verticesV = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
         h.vesselsV = [];
+    end
+
+    function onFigKey(~,~)
+        % Figure 창에서 ESC 키보드 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+ 
+        if isequal(key,char(27))
+            prevIdxAtery = [];
+            prevIdxVein = [];
+            selectIdxAtery = [];
+            selectIdxVein = [];
+            
+            set(h.labelEdit, 'String', '')
+            set(h.labelEdit, 'Enable', 'off')
+            set(h.labelSet, 'Enable', 'off')
+            set(h.delete, 'Enable', 'off')
+            redraw()
+        end
     end
 
     function onArtery(~,~)
@@ -437,23 +455,32 @@ function vessel_graph
         redraw()
     end
 
-    function onEnterEdit(~,~)
-        % text edit 창에서 엔터 입력시 동작
+    function onEditKey(~,~)
+        % text edit 창에서 Enter, ESC 키보드 입력시 동작
         key = get(h.fig,'CurrentCharacter');
- 
+
         if isequal(key,char(13))
             % 포커스를 옆에 set 버튼으로 이동, 그래야 현재 편집 정보 반영 됨
             uicontrol(h.labelSet);
             onLabelSet();
+        elseif isequal(key,char(27))
+            selectIdxAtery = [];
+            selectIdxVein = [];
+            uicontrol(h.labelSet);
+            setCategory();
         end
     end
 
-    function onEnterSet(~,~)
-        % set 버튼 포커스 후 엔터 입력시 동작
+    function onSetKey(~,~)
+        % set 버튼 포커스 후 Enter, ESC 키보드 입력시 동작
         key = get(h.fig,'CurrentCharacter');
  
         if isequal(key,char(13))
             onLabelSet();
+        elseif isequal(key,char(27))
+            selectIdxAtery = [];
+            selectIdxVein = [];
+            setCategory();
         end
     end
 
@@ -499,7 +526,6 @@ function vessel_graph
         end
         
         % 혈관 이름 (선분) 목록 출력
-
         if vesselState
             if size(labelAtery,1) == 1, set(h.list, 'Value', 1); end
             % 동맥 이름 출력
