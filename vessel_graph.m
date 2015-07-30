@@ -95,7 +95,7 @@ function vessel_graph
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
         h.verticesVein = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
-        h.vesselsAteryV = [];
+        h.vesselsVein = [];
     end
 
     function onFigKey(~,~)
@@ -557,13 +557,13 @@ function vessel_graph
             p(2+3*(q-1),:) = ptsVein(labelVein{q,2},:);
         end
         set(h.edgesVein, 'XData',p(:,1), 'YData',p(:,2))
-        if ishghandle(h.vesselsAteryV), delete(h.vesselsAteryV); end
-        h.vesselsAteryV = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+        if ishghandle(h.vesselsVein), delete(h.vesselsVein); end
+        h.vesselsVein = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
              strcat(labelVein(:,3)), ...  % labelV(:)
              'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxVein)
-            set(h.vesselsAteryV(selectIdxVein), 'Color', 'g')
+            set(h.vesselsVein(selectIdxVein), 'Color', 'g')
         end
          
         % 점 그리기 단계
