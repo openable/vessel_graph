@@ -33,8 +33,6 @@ function VGE
         h.ax = axes('Parent',h.tab1, 'ButtonDownFcn',@onMouseDown, ...
             'XLim',[0 1000], 'YLim',[0 1000], 'XTick',[], 'YTick',[], 'Box','on', ...
             'Units','pixels', 'Position',[160 20 800 800]);
-
-        %radio code move
         h.rA = uicontrol('Style','radiobutton', 'Parent',h.tab1, 'String','Artery', ...
             'Position',[20 800 60 20],'Value',1,'Callback',@onArtery);
         h.rV = uicontrol('Style','radiobutton', 'Parent',h.tab1, 'String','Vein', ...
@@ -99,7 +97,84 @@ function VGE
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
         h.verticesVein = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
-        h.vesselsAteryV = [];
+        h.vesselsVein = [];
+        
+        
+        
+        
+        
+        
+        %3D 내용 초기화
+        h.ax3D = axes('Parent',h.tab2, 'ButtonDownFcn',@onMouseDown3D, ...
+            'XLim',[0 1000], 'YLim',[0 1000], 'XTick',[], 'YTick',[], 'Box','on', ...
+            'Units','pixels', 'Position',[160 20 800 800]);
+        h.rA3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Artery', ...
+            'Position',[20 800 60 20],'Value',1,'Callback',@onArtery3D);
+        h.rV3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Vein', ...
+            'Position',[90 800 60 20],'Callback',@onVein3D);
+        h.list3D = uicontrol('Style','listbox', 'Parent',h.tab2, 'String',{}, ...
+            'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
+            'Position',[20 200 130 590], 'Callback',@onSelect3D); % 140
+        h.labelText3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
+            'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
+            'Position',[20 170 40 20]);
+        h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
+            'HorizontalAlignment', 'left', 'Enable', 'off', ...
+            'Position',[60 170 60 20], 'KeyPressFcn',@onEditKey3D);
+        h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
+            'Position',[125 170 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+        h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 불러오기', ...
+            'Position',[20 140 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
+        h.delete3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','점/선분 삭제', ...
+            'Position',[20 110 130 20], 'Callback',@onDelete3D, 'Enable', 'off');
+        h.clear3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','초기화', ...
+            'Position',[20 80 130 20], 'Callback',@onClear3D);
+        h.import3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','가져오기', ...
+            'Position',[20 50 130 20], 'Callback',@onImport3D);
+        h.export3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','내보내기', ...
+            'Position',[20 20 130 20], 'Callback',@onExport3D);
+
+
+        
+        h.cmenu3D = uicontextmenu('Parent',h.fig);
+        h.menu3D = uimenu(h.cmenu3D, 'Label','Show verticies', 'Checked','off', ...
+            'Callback',@onCMenu);
+        set(h.list3D, 'UIContextMenu',h.cmenu3D)
+
+        % 동맥 (Atery)
+        % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
+        h.ptsAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
+            'LineStyle','none');
+        % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
+        h.prevAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'Marker','o', 'MarkerSize',20, 'Color','g', ...
+            'LineStyle','none', 'LineWidth',2);
+        % 선분 목록
+        h.edgesAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'LineWidth',2, 'Color','r');
+        % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
+        h.verticesAtery3D = [];
+        % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
+        h.vesselsAtery3D = [];
+        
+        
+        % 정맥 (Vein)
+        % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
+        h.ptsVein3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
+            'LineStyle','none');
+        % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
+        h.prevVein3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'Marker','o', 'MarkerSize',20, 'Color','g', ...
+            'LineStyle','none', 'LineWidth',2);
+        % 선분 목록
+        h.edgesVein3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'LineWidth',2, 'Color','b');
+        % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
+        h.verticesVein3D = [];
+        % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
+        h.vesselsVein3D = [];
     end
 
     function onFigKey(~,~)
@@ -561,13 +636,13 @@ function VGE
             p(2+3*(q-1),:) = ptsVein(labelVein{q,2},:);
         end
         set(h.edgesVein, 'XData',p(:,1), 'YData',p(:,2))
-        if ishghandle(h.vesselsAteryV), delete(h.vesselsAteryV); end
-        h.vesselsAteryV = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+        if ishghandle(h.vesselsVein), delete(h.vesselsVein); end
+        h.vesselsVein = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
              strcat(labelVein(:,3)), ...  % labelV(:)
              'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
              'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxVein)
-            set(h.vesselsAteryV(selectIdxVein), 'Color', 'g')
+            set(h.vesselsVein(selectIdxVein), 'Color', 'g')
         end
          
         % 점 그리기 단계
@@ -617,5 +692,14 @@ function VGE
         % force refresh
         drawnow
     end
+
+
+
+    function onOpen3D(~,~)
+        FileName = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+    end
+
+
+
 
 end
