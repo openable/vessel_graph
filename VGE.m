@@ -1,26 +1,26 @@
 function VGE
-    % data
-    showVertices = true;   % flag to determine whether to show node labels
+% data
+showVertices = true;   % flag to determine whether to show node labels
 
-    prevIdxAtery = [];         % keeps track of 1st node clicked in creating edges
-    selectIdxAtery = [];       % used to highlight node selected in listbox
+prevIdxAtery = [];         % keeps track of 1st node clicked in creating edges
+selectIdxAtery = [];       % used to highlight node selected in listbox
 
-    ptsAtery = zeros(0,2);     % x/y coordinates of vertices
-    adjAtery = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-    labelAtery = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+ptsAtery = zeros(0,2);     % x/y coordinates of vertices
+adjAtery = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+labelAtery = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
 
-    prevIdxVein = [];
-    selectIdxVein = [];
-    
-    ptsVein = zeros(0,2);     % x/y coordinates of vertices
-    adjVein = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-    labelVein = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
-    
-    vesselState = 1;        % Artery (1) / Vein (0) state
-    
+prevIdxVein = [];
+selectIdxVein = [];
 
-    % create GUI
-    h = initGUI();
+ptsVein = zeros(0,2);     % x/y coordinates of vertices
+adjVein = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+labelVein = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+
+vesselState = 1;        % Artery (1) / Vein (0) state
+
+
+% create GUI
+h = initGUI();
 
     function h = initGUI()
         scr = get(groot,'ScreenSize');
@@ -56,14 +56,14 @@ function VGE
             'Position',[20 50 130 20], 'Callback',@onImport);
         h.export = uicontrol('Style','pushbutton', 'Parent',h.tab1, 'String','내보내기', ...
             'Position',[20 20 130 20], 'Callback',@onExport);
-
-
+        
+        
         
         h.cmenu = uicontextmenu('Parent',h.fig);
         h.menu = uimenu(h.cmenu, 'Label','Show verticies', 'Checked','off', ...
             'Callback',@onCMenu);
         set(h.list, 'UIContextMenu',h.cmenu)
-
+        
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
         h.ptsAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
@@ -106,8 +106,8 @@ function VGE
         
         %3D 내용 초기화
         h.ax3D = axes('Parent',h.tab2, 'ButtonDownFcn',@onMouseDown3D, ...
-            'XLim',[0 1000], 'YLim',[0 1000], 'XTick',[], 'YTick',[], 'Box','on', ...
-            'Units','pixels', 'Position',[160 20 800 800]);
+            'XTick',[], 'YTick',[], 'Box','on', ...
+            'Units','normalized', 'Position',[0.165 0.025 0.82 0.96]);
         h.rA3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Artery', ...
             'Position',[20 800 60 20],'Value',1,'Callback',@onArtery3D);
         h.rV3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Vein', ...
@@ -133,14 +133,14 @@ function VGE
             'Position',[20 50 130 20], 'Callback',@onImport3D);
         h.export3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','내보내기', ...
             'Position',[20 20 130 20], 'Callback',@onExport3D);
-
-
+        
+        
         
         h.cmenu3D = uicontextmenu('Parent',h.fig);
         h.menu3D = uimenu(h.cmenu3D, 'Label','Show verticies', 'Checked','off', ...
             'Callback',@onCMenu);
         set(h.list3D, 'UIContextMenu',h.cmenu3D)
-
+        
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
         h.ptsAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
@@ -180,7 +180,7 @@ function VGE
     function onFigKey(~,~)
         % Figure 창에서 ESC 키보드 입력시 동작
         key = get(h.fig,'CurrentCharacter');
- 
+        
         if isequal(key,char(27))
             prevIdxAtery = [];
             prevIdxVein = [];
@@ -231,7 +231,7 @@ function VGE
         end
         
         p = get(h.ax, 'CurrentPoint');
-
+        
         if vesselState == 1
             % 동맥 처리 (Atery)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
@@ -245,7 +245,7 @@ function VGE
                 if size(labelAtery,1) < 1, return; end
                 labelPts = getLabelPts(ptsAtery, labelAtery);
                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
-
+                
                 if sqrt(dst) > 20, selectIdxAtery = []; setCategory(); return; end
                 onLabelEdit(idx);
             else
@@ -253,7 +253,7 @@ function VGE
                 [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
                 if sqrt(dst) > 8, return; end
                 set(h.delete, 'Enable', 'on')
-
+                
                 if isempty(prevIdxAtery)
                     % starting node (requires a second click to finish)
                     prevIdxAtery = idx;
@@ -276,7 +276,7 @@ function VGE
                 selectIdxVein = [];
             end
         else
-            % 정맥 처리 (Vein) 
+            % 정맥 처리 (Vein)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % add a new node
                 ptsVein(end+1,:) = p(1,1:2);
@@ -288,7 +288,7 @@ function VGE
                 if size(labelVein,1) < 1, return; end
                 labelPts = getLabelPts(ptsVein, labelVein);
                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
-
+                
                 if sqrt(dst) > 20, selectIdxVein = []; setCategory(); return; end
                 onLabelEdit(idx);
             else
@@ -296,7 +296,7 @@ function VGE
                 [dst,idx] = min(sum(bsxfun(@minus, ptsVein, p(1,1:2)).^2,2));
                 if sqrt(dst) > 8, return; end
                 set(h.delete, 'Enable', 'on')
-
+                
                 if isempty(prevIdxVein)
                     % starting node (requires a second click to finish)
                     prevIdxVein = idx;
@@ -319,7 +319,7 @@ function VGE
                 selectIdxVein = [];
             end
         end
-
+        
         % update GUI
         redraw()
     end
@@ -336,20 +336,20 @@ function VGE
     function onDelete(~,~)
         % check that list of nodes is not empty
         if isempty(ptsAtery) && isempty(ptsVein), return; end
-
+        
         % delete selected node
         if vesselState
             if ~isempty(prevIdxAtery)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxAtery;
-    %            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
-
+                %            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
+                
                 % 꼭지점 삭제 단계
                 ptsAtery(idx,:) = [];
-
+                
                 % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
                 adjAtery(:,idx) = [];
                 adjAtery(idx,:) = [];
-
+                
                 rowList = [];
                 for q = 1:size(labelAtery,1)
                     if labelAtery{q,1} == idx || labelAtery{q,2} == idx
@@ -361,40 +361,40 @@ function VGE
                     if labelAtery{q,1} > idx
                         labelAtery{q,1} = labelAtery{q,1}-1;
                     end
-
+                    
                     if labelAtery{q,2} > idx
                         labelAtery{q,2} = labelAtery{q,2}-1;
                     end
-
+                    
                     if isempty(labelAtery{q,4}) || labelAtery{q,4} == 0
                         labelAtery{q,3} = ['A' num2str(q)];
                     end
                 end
-
+                
             else
                 idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
                 adjAtery(labelAtery{idx,1}, labelAtery{idx,2}) = 0;
                 labelAtery(idx,:) = [];
-
-                for q = 1:size(labelAtery,1)                
+                
+                for q = 1:size(labelAtery,1)
                     if isempty(labelAtery{q,4}) || labelAtery{q,4} == 0
                         labelAtery{q,3} = ['A' num2str(q)];
                     end
                 end
             end
-
-
+            
+            
             % clear previous selections
             if prevIdxAtery == idx
                 prevIdxAtery = [];
             end
             selectIdxAtery = [];
-
+            
             if strcmp(get(h.labelEdit, 'Enable'), 'on')
                 set(h.labelEdit, 'String', '')
                 set(h.labelEdit, 'Enable', 'off')
             end
-
+            
             if strcmp(get(h.labelSet, 'Enable'), 'on')
                 set(h.labelSet, 'Enable', 'off')
             end
@@ -402,14 +402,14 @@ function VGE
         else
             if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxVein;
-
+                
                 % 꼭지점 삭제 단계
                 ptsVein(idx,:) = [];
-
+                
                 % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
                 adjVein(:,idx) = [];
                 adjVein(idx,:) = [];
-
+                
                 rowList = [];
                 for q = 1:size(labelVein,1)
                     if labelVein{q,1} == idx || labelVein{q,2} == idx
@@ -421,45 +421,45 @@ function VGE
                     if labelVein{q,1} > idx
                         labelVein{q,1} = labelVein{q,1}-1;
                     end
-
+                    
                     if labelVein{q,2} > idx
                         labelVein{q,2} = labelVein{q,2}-1;
                     end
-
+                    
                     if isempty(labelVein{q,4}) || labelVein{q,4} == 0
                         labelVein{q,3} = ['V' num2str(q)];
                     end
                 end
-
+                
             else
                 idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
                 adjVein(labelVein{idx,1}, labelVein{idx,2}) = 0;
                 labelVein(idx,:) = [];
-
-                for q = 1:size(labelVein,1)                
+                
+                for q = 1:size(labelVein,1)
                     if isempty(labelVein{q,4}) || labelVein{q,4} == 0
                         labelVein{q,3} = ['V' num2str(q)];
                     end
                 end
             end
-
-
+            
+            
             % clear previous selections
             if prevIdxVein == idx
                 prevIdxVein = [];
             end
             selectIdxVein = [];
-
+            
             if strcmp(get(h.labelEdit, 'Enable'), 'on')
                 set(h.labelEdit, 'String', '')
                 set(h.labelEdit, 'Enable', 'off')
             end
-
+            
             if strcmp(get(h.labelSet, 'Enable'), 'on')
                 set(h.labelSet, 'Enable', 'off')
             end
         end
-
+        
         % update GUI
         set(h.list, 'Value',1)
         set(h.delete, 'Enable', 'off')
@@ -479,7 +479,7 @@ function VGE
         ptsVein = zeros(0,2);
         adjVein = sparse([]);
         labelVein = cell(0,3);      % label 엣지 정보 제거 추가
-
+        
         % update GUI
         set(h.labelEdit, 'String', '')
         set(h.labelEdit, 'Enable', 'off')
@@ -525,7 +525,7 @@ function VGE
                 selectIdxVein = get(h.list, 'Value');
                 set(h.labelEdit, 'String', labelVein{selectIdxVein, 3})
             end
-
+            
             set(h.labelEdit, 'Enable', 'on')
             set(h.delete, 'Enable', 'on')
             set(h.labelSet, 'Enable', 'on')
@@ -586,7 +586,7 @@ function VGE
     function onEditKey(~,~)
         % text edit 창에서 Enter, ESC 키보드 입력시 동작
         key = get(h.fig,'CurrentCharacter');
-
+        
         if isequal(key,char(13))
             % 포커스를 옆에 set 버튼으로 이동, 그래야 현재 편집 정보 반영 됨
             uicontrol(h.labelSet);
@@ -602,7 +602,7 @@ function VGE
     function onSetKey(~,~)
         % set 버튼 포커스 후 Enter, ESC 키보드 입력시 동작
         key = get(h.fig,'CurrentCharacter');
- 
+        
         if isequal(key,char(13))
             onLabelSet();
         elseif isequal(key,char(27))
@@ -623,12 +623,12 @@ function VGE
         set(h.edgesAtery, 'XData',p(:,1), 'YData',p(:,2))
         if ishghandle(h.vesselsAtery), delete(h.vesselsAtery); end
         h.vesselsAtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-             strcat(labelAtery(:,3)), ...  % label(:)
-             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
-             'VerticalAlign','bottom', 'HorizontalAlign','left');
+            strcat(labelAtery(:,3)), ...  % label(:)
+            'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
+            'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxAtery)
             set(h.vesselsAtery(selectIdxAtery), 'Color', 'g')
-        end   
+        end
         % 정맥
         p = nan(3*nnz(adjVein),2);
         for q = 1:size(labelVein,1)
@@ -638,18 +638,18 @@ function VGE
         set(h.edgesVein, 'XData',p(:,1), 'YData',p(:,2))
         if ishghandle(h.vesselsVein), delete(h.vesselsVein); end
         h.vesselsVein = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-             strcat(labelVein(:,3)), ...  % labelV(:)
-             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
-             'VerticalAlign','bottom', 'HorizontalAlign','left');
+            strcat(labelVein(:,3)), ...  % labelV(:)
+            'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
+            'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxVein)
             set(h.vesselsVein(selectIdxVein), 'Color', 'g')
         end
-         
+        
         % 점 그리기 단계
         % 동맥
         set(h.ptsAtery, 'XData', ptsAtery(:,1), 'YData',ptsAtery(:,2))
         set(h.prevAtery, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
-    
+        
         % 정맥
         set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
         set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
@@ -664,7 +664,7 @@ function VGE
             % 정맥 이름 출력
             set(h.list, 'String', strcat(num2str((1:size(labelVein,1))'), ': ', labelVein(:,3)))
         end
-
+        
         % 꼭지점 이름 출력
         % 동맥
         if ishghandle(h.verticesAtery), delete(h.verticesAtery); end
@@ -688,7 +688,7 @@ function VGE
         else
             set(h.menu, 'Checked','off')
         end
-
+        
         % force refresh
         drawnow
     end
@@ -696,10 +696,178 @@ function VGE
 
 
     function onOpen3D(~,~)
-        FileName = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+        filename = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+        
+        [F, V, C] = rndread(filename);
+        p = patch('faces', F, 'vertices' ,V);
+        %set(p, 'facec', 'b');              % Set the face color (force it)
+        set(p, 'facec', 'flat');            % Set the face color flat
+        set(p, 'FaceVertexCData', C);       % Set the color (from file)
+        %set(p, 'facealpha',.4)             % Use for transparency
+        set(p, 'EdgeColor','none');         % Set the edge color
+        %set(p, 'EdgeColor',[1 0 0 ]);      % Use to see triangles, if needed.
+        light                               % add a default light
+        daspect([1 1 1])                    % Setting the aspect ratio
+        view(3)                             % Isometric view
+        xlabel('X'),ylabel('Y'),zlabel('Z')
+        title(['Imported CAD data from ' filename])
+        drawnow                             %, axis manual
+        %
+        disp(['CAD file ' filename ' data is read, will now show object rotating'])
+
     end
 
 
+    function Rx = rx(THETA)
+        % ROTATION ABOUT THE X-axis
+        %
+        % Rx = rx(THETA)
+        %
+        % This is the homogeneous transformation for
+        % rotation about the X-axis.
+        %
+        %	    NOTE:  The angle THETA must be in DEGREES.
+        %
+        THETA = THETA*pi/180;  % Note: THETA in radians.
+        c = cos(THETA);
+        s = sin(THETA);
+        Rx = [1 0 0 0; 0 c -s 0; 0 s c 0; 0 0 0 1];
+    end
 
 
+    function Ry = ry(THETA)
+        % ROTATION ABOUT THE Y-axis
+        %
+        % Ry = ry(THETA)
+        %
+        % This is the homogeneous transformation for
+        % rotation about the Y-axis.
+        %
+        %		NOTE: The angel THETA must be in DEGREES.
+        %
+        THETA = THETA*pi/180;  %Note: THETA is in radians.
+        c = cos(THETA);
+        s = sin(THETA);
+        Ry = [c 0 s 0; 0 1 0 0; -s 0 c 0; 0 0 0 1];
+    end
+
+    function Rz = rz(THETA)
+        % ROTATION ABOUT THE Z-axis
+        %
+        % Rz = rz(THETA)
+        %
+        % This is the homogeneous transformation for
+        % rotation about the Z-axis.
+        %
+        %		NOTE:  The angle THETA must be in DEGREES.
+        %
+        THETA = THETA*pi/180;  %Note: THETA is in radians.
+        c = cos(THETA);
+        s = sin(THETA);
+        Rz = [c -s 0 0; s c 0 0; 0 0 1 0; 0 0 0 1];
+    end
+
+    function T = tl(x,y,z)
+        % TRANSLATION ALONG THE X, Y, AND Z AXES
+        %
+        % T = tl(x,y,z)
+        %
+        % This is the homogeneous transformation for
+        % translation along the X, Y, and Z axes.
+        %
+        T = [1 0 0 x; 0 1 0 y; 0 0 1 z; 0 0 0 1];
+    end
+
+
+    function vsize = maxv(V)
+        %
+        % Look at the xyz elements of V, and determine the maximum
+        % values during some simple rotations.
+        vsize = max(max(V));
+        % Rotate it a bit, and check for max and min vertex for viewing.
+        for ang = 0:10:360
+            vsizex = rx(ang)*V;
+            maxv = max(max(vsizex));
+            if maxv > vsize, vsize = maxv; end
+            vsizey = ry(ang)*V;
+            maxv = max(max(vsizey));
+            if maxv > vsize, vsize = maxv; end
+            vsizez = rz(ang)*V;
+            maxv = max(max(vsizez));
+            if maxv > vsize, vsize = maxv; end
+            vsizev = rx(ang)*ry(ang)*rz(ang)*V;
+            maxv = max(max(vsizev));
+            if maxv > vsize, vsize = maxv; end
+        end
+    end
+
+    function [fout, vout, cout] = rndread(filename)
+        % Reads CAD STL ASCII files, which most CAD programs can export.
+        % Used to create Matlab patches of CAD 3D data.
+        % Returns a vertex list and face list, for Matlab patch command.
+        %
+        % filename = 'hook.stl';  % Example file.
+        %
+        fid=fopen(filename, 'r'); %Open the file, assumes STL ASCII format.
+        if fid == -1
+            error('File could not be opened, check name or path.')
+        end
+        %
+        % Render files take the form:
+        %
+        %solid BLOCK
+        %  color 1.000 1.000 1.000
+        %  facet
+        %      normal 0.000000e+00 0.000000e+00 -1.000000e+00
+        %      normal 0.000000e+00 0.000000e+00 -1.000000e+00
+        %      normal 0.000000e+00 0.000000e+00 -1.000000e+00
+        %    outer loop
+        %      vertex 5.000000e-01 -5.000000e-01 -5.000000e-01
+        %      vertex -5.000000e-01 -5.000000e-01 -5.000000e-01
+        %      vertex -5.000000e-01 5.000000e-01 -5.000000e-01
+        %    endloop
+        % endfacet
+        %
+        % The first line is object name, then comes multiple facet and vertex lines.
+        % A color specifier is next, followed by those faces of that color, until
+        % next color line.
+        %
+        CAD_object_name = sscanf(fgetl(fid), '%*s %s');  %CAD object name, if needed.
+        %                                                %Some STLs have it, some don't.
+        vnum=0;       %Vertex number counter.
+        report_num=0; %Report the status as we go.
+        VColor = 0;
+        %
+        while feof(fid) == 0                    % test for end of file, if not then do stuff
+            tline = fgetl(fid);                 % reads a line of data from file.
+            fword = sscanf(tline, '%s ');       % make the line a character string
+            % Check for color
+            if strncmpi(fword, 'c',1) == 1;    % Checking if a "C"olor line, as "C" is 1st char.
+                VColor = sscanf(tline, '%*s %f %f %f'); % & if a C, get the RGB color data of the face.
+            end                                % Keep this color, until the next color is used.
+            if strncmpi(fword, 'v',1) == 1;    % Checking if a "V"ertex line, as "V" is 1st char.
+                vnum = vnum + 1;                % If a V we count the # of V's
+                report_num = report_num + 1;    % Report a counter, so long files show status
+                if report_num > 249;
+                    disp(sprintf('Reading vertix num: %d.',vnum));
+                    report_num = 0;
+                end
+                v(:,vnum) = sscanf(tline, '%*s %f %f %f'); % & if a V, get the XYZ data of it.
+                c(:,vnum) = VColor;              % A color for each vertex, which will color the faces.
+            end                                 % we "*s" skip the name "color" and get the data.
+        end
+        %   Build face list; The vertices are in order, so just number them.
+        %
+        fnum = vnum/3;      %Number of faces, vnum is number of vertices.  STL is triangles.
+        flist = 1:vnum;     %Face list of vertices, all in order.
+        F = reshape(flist, 3,fnum); %Make a "3 by fnum" matrix of face list data.
+        %
+        %   Return the faces and vertexs.
+        %
+        fout = F';  %Orients the array for direct use in patch.
+        vout = v';  % "
+        cout = c';
+        %
+        fclose(fid);
+    end
 end
