@@ -106,7 +106,7 @@ h = initGUI();
         
         %3D 내용 초기화
         h.ax3D = axes('Parent',h.tab2, 'ButtonDownFcn',@onMouseDown3D, ...
-            'XTick',[], 'YTick',[], 'Box','on', ...
+            'XTick',[], 'YTick',[], 'ZTick',[], 'Box','on', ...
             'Units','normalized', 'Position',[0.165 0.025 0.82 0.96]);
         h.rA3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Artery', ...
             'Position',[20 800 60 20],'Value',1,'Callback',@onArtery3D);
@@ -706,14 +706,17 @@ h = initGUI();
         %set(p, 'facealpha',.4)             % Use for transparency
         set(p, 'EdgeColor','none');         % Set the edge color
         %set(p, 'EdgeColor',[1 0 0 ]);      % Use to see triangles, if needed.
+        set(h.ax3D.XLabel, 'String', 'X');
+        set(h.ax3D.YLabel, 'String', 'Y');
+        set(h.ax3D.ZLabel, 'String', 'Z');
+        
         light                               % add a default light
         daspect([1 1 1])                    % Setting the aspect ratio
         view(3)                             % Isometric view
-        xlabel('X'),ylabel('Y'),zlabel('Z')
-        title(['Imported CAD data from ' filename])
+        %xlabel('X'),ylabel('Y'),zlabel('Z')
         drawnow                             %, axis manual
         %
-        disp(['CAD file ' filename ' data is read, will now show object rotating'])
+        %disp(['CAD file ' filename ' data is read, will now show object rotating'])
 
     end
 
@@ -805,9 +808,7 @@ h = initGUI();
         % Reads CAD STL ASCII files, which most CAD programs can export.
         % Used to create Matlab patches of CAD 3D data.
         % Returns a vertex list and face list, for Matlab patch command.
-        %
-        % filename = 'hook.stl';  % Example file.
-        %
+        
         fid=fopen(filename, 'r'); %Open the file, assumes STL ASCII format.
         if fid == -1
             error('File could not be opened, check name or path.')
