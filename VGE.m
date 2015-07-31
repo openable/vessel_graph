@@ -101,9 +101,6 @@ h = initGUI();
         
         
         
-        
-        
-        
         %3D 내용 초기화
         h.ax3D = axes('Parent',h.tab2, 'ButtonDownFcn',@onMouseDown3D, ...
             'XTick',[], 'YTick',[], 'ZTick',[], 'Box','on', ...
@@ -143,15 +140,15 @@ h = initGUI();
         
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.ptsAtery3D = line(NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
-        h.prevAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.prevAtery3D = line(NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 선분 목록
-        h.edgesAtery3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.edgesAtery3D = line(NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
         h.verticesAtery3D = [];
@@ -161,15 +158,15 @@ h = initGUI();
         
         % 정맥 (Vein)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsVein3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.ptsVein3D = line(NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
-        h.prevVein3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.prevVein3D = line(NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 선분 목록
-        h.edgesVein3D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.edgesVein3D = line(NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'LineWidth',2, 'Color','b');
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
         h.verticesVein3D = [];
@@ -495,9 +492,9 @@ h = initGUI();
     end
 
     function onImport(~,~)
-        FileName = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
+        [fname, fpath] = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
         onClear();
-        finput = load(FileName);
+        finput = load([fpath '\' fname]);
         
         ptsAtery = finput.ptsAtery;
         adjAtery = finput.adjAtery;
@@ -700,9 +697,9 @@ h = initGUI();
         set(h.ax3D.YLabel, 'String', 'Y');
         set(h.ax3D.ZLabel, 'String', 'Z');
         
-        filename = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+        [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+        fv = stlread([fpath '\' fname]);
         
-        fv = stlread(filename);
         patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
                  'EdgeColor',       'none',        ...
                  'FaceLighting',    'gouraud',     ...
@@ -716,15 +713,5 @@ h = initGUI();
         axis('image');
         view([-135 35]);
 
-        
-%         light                               % add a default light
-%         daspect([1 1 1])                    % Setting the aspect ratio
-%         view(3)                             % Isometric view
-%         %xlabel('X'),ylabel('Y'),zlabel('Z')
-%         drawnow                             %, axis manual
-%         %
-%         %disp(['CAD file ' filename ' data is read, will now show object rotating'])
-
     end
-
 end
