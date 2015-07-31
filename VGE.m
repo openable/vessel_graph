@@ -712,6 +712,5 @@ h = initGUI();
         % Fix the axes scaling, and set a nice view angle
         axis('image');
         view([-135 35]);
-
     end
 end
