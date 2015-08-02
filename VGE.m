@@ -21,6 +21,8 @@ vesselState = 1;        % Artery (1) / Vein (0) state
 
 % create GUI
 h = initGUI();
+initAxes();
+redraw();
 
     function h = initGUI()
         scr = get(groot,'ScreenSize');
@@ -172,6 +174,13 @@ h = initGUI();
         h.verticesVein3D = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
         h.vesselsVein3D = [];
+    end
+
+    function initAxes(~,~)
+        ptsAtery(1,:) = [0 0];
+        adjAtery(end+1,end+1) = 0;
+        
+%        onClear();
     end
 
     function onFigKey(~,~)
