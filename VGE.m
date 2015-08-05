@@ -180,7 +180,7 @@ redraw();
         ptsAtery(1,:) = [0 0];
         adjAtery(end+1,end+1) = 0;
         
-%        onClear();
+        onClear();
     end
 
     function onFigKey(~,~)
