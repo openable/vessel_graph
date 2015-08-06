@@ -113,17 +113,19 @@ redraw();
             'Position',[90 800 60 20],'Callback',@onVein3D);
         h.list3D = uicontrol('Style','listbox', 'Parent',h.tab2, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
-            'Position',[20 200 130 590], 'Callback',@onSelect3D); % 140
+            'Position',[20 230 130 560], 'Callback',@onSelect3D); % 140
         h.labelText3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
-            'Position',[20 170 40 20]);
+            'Position',[20 200 40 20]);
         h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 170 60 20], 'KeyPressFcn',@onEditKey3D);
+            'Position',[60 200 60 20], 'KeyPressFcn',@onEditKey3D);
         h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 170 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 200 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
         h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 불러오기', ...
-            'Position',[20 140 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
+            'Position',[20 170 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
+        h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','Data Tip 설정', ...
+            'Position',[20 140 130 20], 'Callback',@onStartTip, 'Enable', 'on');
         h.delete3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','점/선분 삭제', ...
             'Position',[20 110 130 20], 'Callback',@onDelete3D, 'Enable', 'off');
         h.clear3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','초기화', ...
@@ -734,5 +736,14 @@ redraw();
         % Fix the axes scaling, and set a nice view angle
         axis('image');
         view([-135 35]);
+    end
+
+    function onStartTip(~,~)
+         dcm = datacursormode(h.fig);
+         if strcmp(get(dcm, 'Enable'), 'off')
+             set(dcm, 'Enable', 'on');
+         else
+             
+         end
     end
 end
