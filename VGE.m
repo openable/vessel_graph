@@ -707,6 +707,7 @@ redraw();
 %         set(h.ax3D.ZLabel, 'String', 'Z');
         
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+        %stlread에서 속도 더빠린 stlreadF로 변경
 %         fv = stlread([fpath '\' fname]);
 %         
 %         patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
