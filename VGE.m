@@ -19,6 +19,25 @@ labelVein = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레�
 vesselState = 1;        % Artery (1) / Vein (0) state
 
 
+
+prevIdxAtery3D = [];         % keeps track of 1st node clicked in creating edges
+selectIdxAtery3D = [];       % used to highlight node selected in listbox
+
+ptsAtery3D = zeros(0,3);     % x/y coordinates of vertices
+adjAtery3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+labelAtery3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+
+prevIdxVein3D = [];
+selectIdxVein3D = [];
+
+ptsVein3D = zeros(0,3);     % x/y coordinates of vertices
+adjVein3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+labelVein3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+
+
+
+
+
 % create GUI
 h = initGUI();
 initAxes();
@@ -746,7 +765,95 @@ redraw();
          if strcmp(get(dcm, 'Enable'), 'off')
              set(dcm, 'Enable', 'on');
          else
-             
+             data3 = getCursorInfo(dcm);
+             %disp(data3)
+             set(dcm, 'Enable', 'off');
+             for n = 1:size(data3,2);
+                ptsAtery3D(n,:) = data3(n).Position;
+                adjAtery3D(n,n) = 0;
+             end
+             redraw3D();
          end
+    end
+
+    function redraw3D()
+%         % 선분 그리기 단계
+%         % 동맥
+%         p = nan(3*nnz(adjAtery),2);
+%         for q = 1:size(labelAtery,1)
+%             p(1+3*(q-1),:) = ptsAtery(labelAtery{q,1},:);
+%             p(2+3*(q-1),:) = ptsAtery(labelAtery{q,2},:);
+%         end
+%         set(h.edgesAtery, 'XData',p(:,1), 'YData',p(:,2))
+%         if ishghandle(h.vesselsAtery), delete(h.vesselsAtery); end
+%         h.vesselsAtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+%             strcat(labelAtery(:,3)), ...  % label(:)
+%             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
+%             'VerticalAlign','bottom', 'HorizontalAlign','left');
+%         if ~isempty(selectIdxAtery)
+%             set(h.vesselsAtery(selectIdxAtery), 'Color', 'g')
+%         end
+%         % 정맥
+%         p = nan(3*nnz(adjVein),2);
+%         for q = 1:size(labelVein,1)
+%             p(1+3*(q-1),:) = ptsVein(labelVein{q,1},:);
+%             p(2+3*(q-1),:) = ptsVein(labelVein{q,2},:);
+%         end
+%         set(h.edgesVein, 'XData',p(:,1), 'YData',p(:,2))
+%         if ishghandle(h.vesselsVein), delete(h.vesselsVein); end
+%         h.vesselsVein = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+%             strcat(labelVein(:,3)), ...  % labelV(:)
+%             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
+%             'VerticalAlign','bottom', 'HorizontalAlign','left');
+%         if ~isempty(selectIdxVein)
+%             set(h.vesselsVein(selectIdxVein), 'Color', 'g')
+%         end
+        
+        % 점 그리기 단계
+        % 동맥
+        set(h.ptsAtery3D, 'XData', ptsAtery3D(:,1), 'YData', ptsAtery3D(:,2), 'ZData',ptsAtery3D(:,3))
+%        set(h.prevAtery, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
+        
+        % 정맥
+%        set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
+%        set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
+        
+%         % 혈관 이름 (선분) 목록 출력
+%         if vesselState
+%             if size(labelAtery,1) == 1, set(h.list, 'Value', 1); end
+%             % 동맥 이름 출력
+%             set(h.list, 'String', strcat(num2str((1:size(labelAtery,1))'), ': ', labelAtery(:,3)))
+%         else
+%             if size(labelVein,1) == 1, set(h.list, 'Value', 1); end
+%             % 정맥 이름 출력
+%             set(h.list, 'String', strcat(num2str((1:size(labelVein,1))'), ': ', labelVein(:,3)))
+%         end
+%         
+%         % 꼭지점 이름 출력
+%         % 동맥
+%         if ishghandle(h.verticesAtery), delete(h.verticesAtery); end
+%         if showVertices
+%             set(h.menu, 'Checked','on')
+%             h.verticesAtery = text(ptsAtery(:,1)+2.5, ptsAtery(:,2)+2.5, ...
+%                 strcat('a', num2str((1:size(ptsAtery,1))')), ...
+%                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
+%                 'VerticalAlign','bottom', 'HorizontalAlign','left');
+%         else
+%             set(h.menu, 'Checked','off')
+%         end
+%         % 정맥
+%         if ishghandle(h.verticesVein), delete(h.verticesVein); end
+%         if showVertices
+%             set(h.menu, 'Checked','on')
+%             h.verticesVein = text(ptsVein(:,1)+2.5, ptsVein(:,2)+2.5, ...
+%                 strcat('v', num2str((1:size(ptsVein,1))')), ...
+%                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
+%                 'VerticalAlign','bottom', 'HorizontalAlign','left');
+%         else
+%             set(h.menu, 'Checked','off')
+%         end
+        
+        % force refresh
+        drawnow
     end
 end
