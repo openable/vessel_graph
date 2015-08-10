@@ -504,19 +504,21 @@ redraw();
 
     function onImport(~,~)
         [fname, fpath] = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
-        onClear();
-        finput = load([fpath '\' fname]);
-        
-        ptsAtery = finput.ptsAtery;
-        adjAtery = finput.adjAtery;
-        labelAtery = finput.labelAtery;
-        
-        ptsVein = finput.ptsVein;
-        adjVein = finput.adjVein;
-        labelVein = finput.labelVein;
-        
-        set(h.list, 'Value', 1)
-        redraw();
+        if fname ~= 0
+            onClear();
+            finput = load([fpath '\' fname]);
+
+            ptsAtery = finput.ptsAtery;
+            adjAtery = finput.adjAtery;
+            labelAtery = finput.labelAtery;
+
+            ptsVein = finput.ptsVein;
+            adjVein = finput.adjVein;
+            labelVein = finput.labelVein;
+
+            set(h.list, 'Value', 1)
+            redraw();
+        end
     end
 
     function onSelect(~,~)
@@ -717,25 +719,26 @@ redraw();
 %                  'FaceLighting',    'gouraud',     ...
 %                  'AmbientStrength', 0.15,           ...
 %                  'Parent', h.ax3D);
+        if fname ~= 0
+            [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
+            [v, f]=patchslim(v, f);
 
-        [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
-        [v, f]=patchslim(v, f);
-        
-        patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
-                 'FaceColor',       [0.8 0.8 1.0], ...
-                 'EdgeColor',       'none',        ...
-                 'FaceLighting',    'gouraud',     ...
-                 'AmbientStrength', 0.15,           ...
-                 'Parent', h.ax3D);
+            patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
+                     'FaceColor',       [0.8 0.8 1.0], ...
+                     'EdgeColor',       'none',        ...
+                     'FaceLighting',    'gouraud',     ...
+                     'AmbientStrength', 0.15,           ...
+                     'Parent', h.ax3D);
 
-             
-        % Add a camera light, and tone down the specular highlighting
-        camlight('headlight');
-        material('dull');
 
-        % Fix the axes scaling, and set a nice view angle
-        axis('image');
-        view([-135 35]);
+            % Add a camera light, and tone down the specular highlighting
+            camlight('headlight');
+            material('dull');
+
+            % Fix the axes scaling, and set a nice view angle
+            axis('image');
+            view([-135 35]);
+        end
     end
 
     function onStartTip(~,~)
