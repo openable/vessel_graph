@@ -163,8 +163,8 @@ redraw();
         
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
-            'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
+        h.ptsAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','on', ...
+            'Marker','o', 'MarkerSize',20, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prevAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
@@ -182,7 +182,7 @@ redraw();
         % 정맥 (Vein)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
         h.ptsVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
-            'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
+            'Marker','o', 'MarkerSize',20, 'MarkerFaceColor','b', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prevVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
@@ -756,59 +756,31 @@ redraw();
 
             % Fix the axes scaling, and set a nice view angle
             axis('image');
-            view([-135 35]);
+            view([20 29]);
         end
     end
 
     function onStartTip(~,~)
          dcm = datacursormode(h.fig);
-         if strcmp(get(dcm, 'Enable'), 'off')
-             set(dcm, 'Enable', 'on');
-         else
+%          if strcmp(get(dcm, 'Enable'), 'off')
+%              set(dcm, 'Enable', 'on');
+%          else
              data3 = getCursorInfo(dcm);
              %disp(data3)
-             set(dcm, 'Enable', 'off');
              for n = 1:size(data3,2);
                 ptsAtery3D(n,:) = data3(n).Position;
                 adjAtery3D(n,n) = 0;
              end
+             grid on;
+             disp('Get Data')
+             disp(ptsAtery3D);
              redraw3D();
-         end
+%          end
     end
 
     function redraw3D()
-%         % 선분 그리기 단계
-%         % 동맥
-%         p = nan(3*nnz(adjAtery),2);
-%         for q = 1:size(labelAtery,1)
-%             p(1+3*(q-1),:) = ptsAtery(labelAtery{q,1},:);
-%             p(2+3*(q-1),:) = ptsAtery(labelAtery{q,2},:);
-%         end
-%         set(h.edgesAtery, 'XData',p(:,1), 'YData',p(:,2))
-%         if ishghandle(h.vesselsAtery), delete(h.vesselsAtery); end
-%         h.vesselsAtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-%             strcat(labelAtery(:,3)), ...  % label(:)
-%             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
-%             'VerticalAlign','bottom', 'HorizontalAlign','left');
-%         if ~isempty(selectIdxAtery)
-%             set(h.vesselsAtery(selectIdxAtery), 'Color', 'g')
-%         end
-%         % 정맥
-%         p = nan(3*nnz(adjVein),2);
-%         for q = 1:size(labelVein,1)
-%             p(1+3*(q-1),:) = ptsVein(labelVein{q,1},:);
-%             p(2+3*(q-1),:) = ptsVein(labelVein{q,2},:);
-%         end
-%         set(h.edgesVein, 'XData',p(:,1), 'YData',p(:,2))
-%         if ishghandle(h.vesselsVein), delete(h.vesselsVein); end
-%         h.vesselsVein = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-%             strcat(labelVein(:,3)), ...  % labelV(:)
-%             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
-%             'VerticalAlign','bottom', 'HorizontalAlign','left');
-%         if ~isempty(selectIdxVein)
-%             set(h.vesselsVein(selectIdxVein), 'Color', 'g')
-%         end
-        
+        disp('Drawing Data')
+        disp(ptsAtery3D);
         % 점 그리기 단계
         % 동맥
         set(h.ptsAtery3D, 'XData', ptsAtery3D(:,1), 'YData', ptsAtery3D(:,2), 'ZData',ptsAtery3D(:,3))
@@ -818,42 +790,35 @@ redraw();
 %        set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
 %        set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
         
-%         % 혈관 이름 (선분) 목록 출력
-%         if vesselState
-%             if size(labelAtery,1) == 1, set(h.list, 'Value', 1); end
-%             % 동맥 이름 출력
-%             set(h.list, 'String', strcat(num2str((1:size(labelAtery,1))'), ': ', labelAtery(:,3)))
-%         else
-%             if size(labelVein,1) == 1, set(h.list, 'Value', 1); end
-%             % 정맥 이름 출력
-%             set(h.list, 'String', strcat(num2str((1:size(labelVein,1))'), ': ', labelVein(:,3)))
-%         end
-%         
-%         % 꼭지점 이름 출력
-%         % 동맥
-%         if ishghandle(h.verticesAtery), delete(h.verticesAtery); end
-%         if showVertices
-%             set(h.menu, 'Checked','on')
-%             h.verticesAtery = text(ptsAtery(:,1)+2.5, ptsAtery(:,2)+2.5, ...
-%                 strcat('a', num2str((1:size(ptsAtery,1))')), ...
-%                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
-%                 'VerticalAlign','bottom', 'HorizontalAlign','left');
-%         else
-%             set(h.menu, 'Checked','off')
-%         end
-%         % 정맥
-%         if ishghandle(h.verticesVein), delete(h.verticesVein); end
-%         if showVertices
-%             set(h.menu, 'Checked','on')
-%             h.verticesVein = text(ptsVein(:,1)+2.5, ptsVein(:,2)+2.5, ...
-%                 strcat('v', num2str((1:size(ptsVein,1))')), ...
-%                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
-%                 'VerticalAlign','bottom', 'HorizontalAlign','left');
-%         else
-%             set(h.menu, 'Checked','off')
-%         end
-        
         % force refresh
         drawnow
     end
+
+    function onClear3D(~,~)
+        dcm = datacursormode(h.fig);
+        set(dcm, 'SnapToDataVertex','off');
+
+        % reset everything
+        prevIdxAtery3D = [];
+        selectIdxAtery3D = [];
+        ptsAtery3D = zeros(0,3);
+        adjAtery3D = sparse([]);
+        labelAtery3D = cell(0,3);      % label 엣지 정보 제거 추가
+        
+        prevIdxVein3D = [];
+        selectIdxVein3D = [];
+        ptsVein3D = zeros(0,3);
+        adjVein3D = sparse([]);
+        labelVein3D = cell(0,3);      % label 엣지 정보 제거 추가
+        
+        % update GUI
+        set(h.labelEdit3D, 'String', '')
+        set(h.labelEdit3D, 'Enable', 'off')
+        set(h.labelSet3D, 'Enable', 'off')
+        set(h.delete3D, 'Enable', 'off')
+        set(h.list3D, 'Value', -1)
+        redraw3D()
+    end
+
+
 end
