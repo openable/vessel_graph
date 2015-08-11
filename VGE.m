@@ -132,19 +132,23 @@ redraw();
             'Position',[90 800 60 20],'Callback',@onVein3D);
         h.list3D = uicontrol('Style','listbox', 'Parent',h.tab2, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
-            'Position',[20 230 130 560], 'Callback',@onSelect3D); % 140
+            'Position',[20 290 130 500], 'Callback',@onSelect3D); % 140
         h.labelText3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
-            'Position',[20 200 40 20]);
+            'Position',[20 260 40 20]);
         h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 200 60 20], 'KeyPressFcn',@onEditKey3D);
+            'Position',[60 260 60 20], 'KeyPressFcn',@onEditKey3D);
         h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 200 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 260 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
         h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 불러오기', ...
-            'Position',[20 170 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
-        h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','Data Tip 설정', ...
-            'Position',[20 140 130 20], 'Callback',@onStartTip, 'Enable', 'on');
+            'Position',[20 230 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
+        h.hide3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 감추기', ...
+            'Position',[20 200 130 20], 'Callback',@onHide3D, 'Enable', 'on');
+        h.cursor3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','데이터 커서 모드', ...
+            'Position',[20 170 130 20], 'Callback',@onCursor3D, 'Enable', 'on');
+        h.setVertices = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','꼭지점 설정', ...
+            'Position',[20 140 130 20], 'Callback',@onSetVertices, 'Enable', 'on');
         h.delete3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','점/선분 삭제', ...
             'Position',[20 110 130 20], 'Callback',@onDelete3D, 'Enable', 'off');
         h.clear3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','초기화', ...
@@ -164,11 +168,11 @@ redraw();
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
         h.ptsAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','on', ...
-            'Marker','o', 'MarkerSize',20, 'MarkerFaceColor','r', ...
+            'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prevAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
-            'Marker','o', 'MarkerSize',20, 'Color','g', ...
+            'Marker','o', 'MarkerSize',10, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 선분 목록
         h.edgesAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
@@ -725,24 +729,13 @@ redraw();
 
 
     function onOpen3D(~,~)
-%         set(h.ax3D.XLabel, 'String', 'X');
-%         set(h.ax3D.YLabel, 'String', 'Y');
-%         set(h.ax3D.ZLabel, 'String', 'Z');
-        
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
         %stlread에서 속도 더빠린 stlreadF로 변경
-%         fv = stlread([fpath '\' fname]);
-%         
-%         patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
-%                  'EdgeColor',       'none',        ...
-%                  'FaceLighting',    'gouraud',     ...
-%                  'AmbientStrength', 0.15,           ...
-%                  'Parent', h.ax3D);
         if fname ~= 0
             [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
             [v, f]=patchslim(v, f);
 
-            patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
+            h.p3DH = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
                      'FaceColor',       [0.8 0.8 1.0], ...
                      'EdgeColor',       'none',        ...
                      'FaceLighting',    'gouraud',     ...
@@ -760,27 +753,39 @@ redraw();
         end
     end
 
-    function onStartTip(~,~)
+    function onHide3D(~,~)
+%        if isfield(h.p3DH), return, end
+        
+        if strcmp(get(h.p3DH, 'Visible'), 'on')
+            set(h.p3DH, 'Visible', 'off');
+        else
+            set(h.p3DH, 'Visible', 'on');
+        end
+    end
+
+    function onCursor3D(~,~)
+        dcm = datacursormode(h.fig);
+
+        if strcmp(get(dcm, 'enable'), 'on')
+            set(dcm, 'enable', 'off');
+        else
+            set(dcm, 'enable', 'on');
+            set(dcm, 'SnapToDataVertex','off');
+        end
+    end
+
+    function onSetVertices(~,~)
          dcm = datacursormode(h.fig);
-%          if strcmp(get(dcm, 'Enable'), 'off')
-%              set(dcm, 'Enable', 'on');
-%          else
-             data3 = getCursorInfo(dcm);
-             %disp(data3)
-             for n = 1:size(data3,2);
-                ptsAtery3D(n,:) = data3(n).Position;
-                adjAtery3D(n,n) = 0;
-             end
-             grid on;
-             disp('Get Data')
-             disp(ptsAtery3D);
-             redraw3D();
-%          end
+         data3 = getCursorInfo(dcm);
+         for n = 1:size(data3,2);
+            ptsAtery3D(n,:) = data3(n).Position;
+            adjAtery3D(n,n) = 0;
+         end
+
+         redraw3D();
     end
 
     function redraw3D()
-        disp('Drawing Data')
-        disp(ptsAtery3D);
         % 점 그리기 단계
         % 동맥
         set(h.ptsAtery3D, 'XData', ptsAtery3D(:,1), 'YData', ptsAtery3D(:,2), 'ZData',ptsAtery3D(:,3))
@@ -795,9 +800,6 @@ redraw();
     end
 
     function onClear3D(~,~)
-        dcm = datacursormode(h.fig);
-        set(dcm, 'SnapToDataVertex','off');
-
         % reset everything
         prevIdxAtery3D = [];
         selectIdxAtery3D = [];
