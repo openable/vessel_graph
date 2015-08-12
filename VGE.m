@@ -758,12 +758,13 @@ redraw();
 
     function onHide3D(~,~)
 %        if isfield(h.p3DH), return, end
-        set(h.ax3D, 'XLimMode', 'manual', 'YLimMode', 'manual', 'ZLimMode', 'manual')
 
         if strcmp(get(h.p3DH, 'Visible'), 'on')
+            set(h.ax3D, 'XLimMode', 'manual', 'YLimMode', 'manual', 'ZLimMode', 'manual')
             set(h.p3DH, 'Visible', 'off');
         else
             set(h.p3DH, 'Visible', 'on');
+            set(h.ax3D, 'XLimMode', 'auto', 'YLimMode', 'auto', 'ZLimMode', 'auto')
         end
     end
 
