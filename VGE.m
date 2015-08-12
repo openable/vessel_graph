@@ -124,7 +124,8 @@ redraw();
         
         %3D 내용 초기화
         h.ax3D = axes('Parent',h.tab2, 'ButtonDownFcn',@onMouseDown3D, ...
-            'XTick',[], 'YTick',[], 'ZTick',[], 'Box','on', ...
+            'XLim',[0 1000], 'YLim',[0 1000], 'ZLim',[0 1000], ...
+            'XTick',[], 'YTick',[], 'ZTick',[], 'Box','on', ... 
             'Units','pixels', 'Position',[160 20 800 800]);
         h.rA3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Artery', ...
             'Position',[20 800 60 20],'Value',1,'Callback',@onArtery3D);
@@ -727,7 +728,7 @@ redraw();
     end
 
 
-
+%% 3D 구현
     function onOpen3D(~,~)
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
         %stlread에서 속도 더빠린 stlreadF로 변경
@@ -750,12 +751,15 @@ redraw();
             % Fix the axes scaling, and set a nice view angle
             axis('image');
             view([20 29]);
+            
+            set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
         end
     end
 
     function onHide3D(~,~)
 %        if isfield(h.p3DH), return, end
-        
+        set(h.ax3D, 'XLimMode', 'manual', 'YLimMode', 'manual', 'ZLimMode', 'manual')
+
         if strcmp(get(h.p3DH, 'Visible'), 'on')
             set(h.p3DH, 'Visible', 'off');
         else
@@ -822,5 +826,106 @@ redraw();
         redraw3D()
     end
 
+function onMouseDown3D(~,~)
+            % get location of mouse click (in data coordinates)
+        if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
+            set(h.labelEdit3D, 'String', '')
+            set(h.labelEdit3D, 'Enable', 'off')
+        end
+        
+        p = get(h.ax3D, 'CurrentPoint');
+        disp(p)
+        
+%         if vesselState == 1
+%             % 동맥 처리 (Atery)
+%             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
+%                 % add a new node
+%                 ptsAtery(end+1,:) = p(1,1:2);
+%                 adjAtery(end+1,end+1) = 0;
+%                 
+%                 selectIdxAtery = [];
+%                 selectIdxVein = [];
+%             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
+%                 if size(labelAtery,1) < 1, return; end
+%                 labelPts = getLabelPts(ptsAtery, labelAtery);
+%                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
+%                 
+%                 if sqrt(dst) > 20, selectIdxAtery = []; setCategory(); return; end
+%                 onLabelEdit(idx);
+%             else
+%                 % hit test (find node closest to click location: euclidean distnce)
+%                 [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
+%                 if sqrt(dst) > 8, return; end
+%                 set(h.delete, 'Enable', 'on')
+%                 
+%                 if isempty(prevIdxAtery)
+%                     % starting node (requires a second click to finish)
+%                     prevIdxAtery = idx;
+%                 else
+%                     % add the new edge % 선분 생성 단계
+%                     if adjAtery(prevIdxAtery,idx) ~= 1 && adjAtery(idx,prevIdxAtery) ~= 1
+%                         adjAtery(prevIdxAtery,idx) = 1;
+%                         m = size(labelAtery,1);
+%                         labelAtery{m+1,1} = prevIdxAtery;
+%                         labelAtery{m+1,2} = idx;
+%                         labelAtery{m+1,3} = strcat('A', num2str(m+1));
+%                     else
+%                         % warndlg('두 점은 이미 연결되었습니다.','거절')
+%                     end
+%                     prevIdxAtery = [];
+%                     set(h.delete, 'Enable', 'off')
+%                 end
+%                 
+%                 selectIdxAtery = [];
+%                 selectIdxVein = [];
+%             end
+%         else
+%             % 정맥 처리 (Vein)
+%             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
+%                 % add a new node
+%                 ptsVein(end+1,:) = p(1,1:2);
+%                 adjVein(end+1,end+1) = 0;
+%                 
+%                 selectIdxAtery = [];
+%                 selectIdxVein = [];
+%             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
+%                 if size(labelVein,1) < 1, return; end
+%                 labelPts = getLabelPts(ptsVein, labelVein);
+%                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
+%                 
+%                 if sqrt(dst) > 20, selectIdxVein = []; setCategory(); return; end
+%                 onLabelEdit(idx);
+%             else
+%                 % hit test (find node closest to click location: euclidean distnce)
+%                 [dst,idx] = min(sum(bsxfun(@minus, ptsVein, p(1,1:2)).^2,2));
+%                 if sqrt(dst) > 8, return; end
+%                 set(h.delete, 'Enable', 'on')
+%                 
+%                 if isempty(prevIdxVein)
+%                     % starting node (requires a second click to finish)
+%                     prevIdxVein = idx;
+%                 else
+%                     % add the new edge % 선분 생성 단계
+%                     if adjVein(prevIdxVein,idx) ~= 1 && adjVein(idx,prevIdxVein) ~= 1
+%                         adjVein(prevIdxVein,idx) = 1;
+%                         m = size(labelVein,1);
+%                         labelVein{m+1,1} = prevIdxVein;
+%                         labelVein{m+1,2} = idx;
+%                         labelVein{m+1,3} = strcat('V', num2str(m+1));
+%                     else
+%                         % warndlg('두 점은 이미 연결되었습니다.','거절')
+%                     end
+%                     prevIdxVein = [];
+%                     set(h.delete, 'Enable', 'off')
+%                 end
+%                 
+%                 selectIdxAtery = [];
+%                 selectIdxVein = [];
+%             end
+%         end
+%         
+%         % update GUI
+%         redraw()
+end
 
 end
