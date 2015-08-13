@@ -44,7 +44,7 @@ initAxes();
 redraw();
 
     function h = initGUI()
-        scr = get(groot,'ScreenSize');
+        scr = get(0,'ScreenSize');
         h.fig = figure('Name','Vessel Graph', 'Resize','off', 'Position', ...
             [((scr(3)-980)/2) ((scr(4)-840)/2) 980 860], 'KeyPressFcn',@onFigKey);
         h.tgroup = uitabgroup('Parent', h.fig);
@@ -780,21 +780,21 @@ redraw();
     end
 
     function onSetVertices(~,~)
-         dcm = datacursormode(h.fig);
-         data3 = getCursorInfo(dcm);
-         for n = 1:size(data3,2);
+        dcm = datacursormode(h.fig);
+        data3 = getCursorInfo(dcm);
+        for n = 1:size(data3,2);
             ptsAtery3D(n,:) = data3(n).Position;
             adjAtery3D(n,n) = 0;
-         end
-
-         redraw3D();
+        end
+        
+        redraw3D();
     end
 
     function redraw3D()
         % 점 그리기 단계
         % 동맥
         set(h.ptsAtery3D, 'XData', ptsAtery3D(:,1), 'YData', ptsAtery3D(:,2), 'ZData',ptsAtery3D(:,3))
-%        set(h.prevAtery, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
+        set(h.prevAtery3D, 'XData', ptsAtery3D(prevIdxAtery3D,1), 'YData',ptsAtery3D(prevIdxAtery3D,2), 'ZData',ptsAtery3D(prevIdxAtery3D,3))
         
         % 정맥
 %        set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
@@ -829,31 +829,56 @@ redraw();
 
 function onMouseDown3D(~,~)
             % get location of mouse click (in data coordinates)
-        if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
-            set(h.labelEdit3D, 'String', '')
-            set(h.labelEdit3D, 'Enable', 'off')
-        end
+%         if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
+%             set(h.labelEdit3D, 'String', '')
+%             set(h.labelEdit3D, 'Enable', 'off')
+%         end
         
-        p = get(h.ax3D, 'CurrentPoint');
-        disp(p)
-        
-%         if vesselState == 1
-%             % 동맥 처리 (Atery)
-%             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
-%                 % add a new node
-%                 ptsAtery(end+1,:) = p(1,1:2);
-%                 adjAtery(end+1,end+1) = 0;
-%                 
-%                 selectIdxAtery = [];
-%                 selectIdxVein = [];
-%             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
-%                 if size(labelAtery,1) < 1, return; end
-%                 labelPts = getLabelPts(ptsAtery, labelAtery);
-%                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
-%                 
-%                 if sqrt(dst) > 20, selectIdxAtery = []; setCategory(); return; end
-%                 onLabelEdit(idx);
-%             else
+        if vesselState == 1
+            % 동맥 처리 (Atery)
+            if strcmpi(get(h.fig,'SelectionType'), 'Normal')
+                % left click
+                return
+            elseif strcmpi(get(h.fig,'SelectionType'), 'alt') || ...
+                    strcmpi(get(h.fig,'SelectionType'), 'open')
+                % right click (ctrl+left click) / duouble click
+                pointCloud = ptsAtery3D';
+                point = get(h.ax3D, 'CurrentPoint');
+                camPos = get(h.ax3D, 'CameraPosition'); % camera position
+                camTgt = get(h.ax3D, 'CameraTarget'); % where the camera is pointing to
+%                disp(point)
+                
+                camDir = camPos - camTgt; % camera direction
+                camUpVect = get(gca, 'CameraUpVector'); % camera 'up' vector
+
+                % build an orthonormal frame based on the viewing direction and the 
+                % up vector (the "view frame")
+                zAxis = camDir/norm(camDir);    
+                upAxis = camUpVect/norm(camUpVect); 
+                xAxis = cross(upAxis, zAxis);
+                yAxis = cross(zAxis, xAxis);
+
+                rot = [xAxis; yAxis; zAxis]; % view rotation 
+
+                % the point cloud represented in the view frame
+                rotatedPointCloud = rot * pointCloud; 
+
+                % the clicked point represented in the view frame
+                rotatedPointFront = rot * point' ;
+
+                % find the nearest neighbour to the clicked point 
+                pointCloudIndex = dsearchn(rotatedPointCloud(1:2,:)', ... 
+                rotatedPointFront(1:2));
+
+                if isempty(prevIdxAtery3D)
+                    % starting node (requires a second click to finish)
+                    prevIdxAtery3D = pointCloudIndex;
+                else
+                    prevIdxAtery3D = pointCloudIndex;
+                end
+                
+%                fprintf('you clicked on point number %d\n', pointCloudIndex);
+
 %                 % hit test (find node closest to click location: euclidean distnce)
 %                 [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
 %                 if sqrt(dst) > 8, return; end
@@ -879,54 +904,13 @@ function onMouseDown3D(~,~)
 %                 
 %                 selectIdxAtery = [];
 %                 selectIdxVein = [];
-%             end
-%         else
+            end
+         else
 %             % 정맥 처리 (Vein)
-%             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
-%                 % add a new node
-%                 ptsVein(end+1,:) = p(1,1:2);
-%                 adjVein(end+1,end+1) = 0;
-%                 
-%                 selectIdxAtery = [];
-%                 selectIdxVein = [];
-%             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
-%                 if size(labelVein,1) < 1, return; end
-%                 labelPts = getLabelPts(ptsVein, labelVein);
-%                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
-%                 
-%                 if sqrt(dst) > 20, selectIdxVein = []; setCategory(); return; end
-%                 onLabelEdit(idx);
-%             else
-%                 % hit test (find node closest to click location: euclidean distnce)
-%                 [dst,idx] = min(sum(bsxfun(@minus, ptsVein, p(1,1:2)).^2,2));
-%                 if sqrt(dst) > 8, return; end
-%                 set(h.delete, 'Enable', 'on')
-%                 
-%                 if isempty(prevIdxVein)
-%                     % starting node (requires a second click to finish)
-%                     prevIdxVein = idx;
-%                 else
-%                     % add the new edge % 선분 생성 단계
-%                     if adjVein(prevIdxVein,idx) ~= 1 && adjVein(idx,prevIdxVein) ~= 1
-%                         adjVein(prevIdxVein,idx) = 1;
-%                         m = size(labelVein,1);
-%                         labelVein{m+1,1} = prevIdxVein;
-%                         labelVein{m+1,2} = idx;
-%                         labelVein{m+1,3} = strcat('V', num2str(m+1));
-%                     else
-%                         % warndlg('두 점은 이미 연결되었습니다.','거절')
-%                     end
-%                     prevIdxVein = [];
-%                     set(h.delete, 'Enable', 'off')
-%                 end
-%                 
-%                 selectIdxAtery = [];
-%                 selectIdxVein = [];
-%             end
-%         end
-%         
-%         % update GUI
-%         redraw()
+        end
+        
+         % update GUI
+         redraw3D()
 end
 
 end
