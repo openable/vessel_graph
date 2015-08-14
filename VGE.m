@@ -168,7 +168,7 @@ redraw();
         
         % 동맥 (Atery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','on', ...
+        h.ptsAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
@@ -741,6 +741,7 @@ redraw();
                      'EdgeColor',       'none',        ...
                      'FaceLighting',    'gouraud',     ...
                      'AmbientStrength', 0.15,           ...
+                     'HitTest','off', ...
                      'Parent', h.ax3D);
 
 
@@ -776,6 +777,7 @@ redraw();
         else
             set(dcm, 'enable', 'on');
             set(dcm, 'SnapToDataVertex','off');
+            set(h.p3DH, 'HitTest','on');
         end
     end
 
@@ -787,6 +789,7 @@ redraw();
             adjAtery3D(n,n) = 0;
         end
         
+        set(h.p3DH, 'HitTest','off');
         redraw3D();
     end
 
