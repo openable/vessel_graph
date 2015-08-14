@@ -34,7 +34,8 @@ ptsVein3D = zeros(0,3);     % x/y coordinates of vertices
 adjVein3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
 labelVein3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
 
-
+ax3DLimit = zeros(3,2);
+ax3DView = zeros(1,2);
 
 
 
@@ -819,6 +820,17 @@ redraw();
         % 정맥
 %        set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
 %        set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
+
+        if vesselState
+            if size(labelAtery3D,1) == 1, set(h.list3D, 'Value', 1); end
+            % 동맥 이름 출력
+            set(h.list3D, 'String', strcat(num2str((1:size(labelAtery3D,1))'), ': ', labelAtery3D(:,3)))
+        else
+%             if size(labelVein,1) == 1, set(h.list, 'Value', 1); end
+%             % 정맥 이름 출력
+%             set(h.list, 'String', strcat(num2str((1:size(labelVein,1))'), ': ', labelVein(:,3)))
+        end
+
         
         % force refresh
         drawnow
@@ -943,5 +955,39 @@ function onMouseDown3D(~,~)
          % update GUI
          redraw3D()
 end
+
+    function onExport3D(~,~)
+        ax3DLimit = [get(h.ax3D, 'XLim');get(h.ax3D, 'YLim');get(h.ax3D, 'ZLim')];
+        ax3DView = get(h.ax3D, 'View');
+        fname = datestr(now,'yymmddHHMMSS');
+        uisave({'ptsAtery3D', 'adjAtery3D', 'labelAtery3D', 'ptsVein3D', 'adjVein3D', 'labelVein3D', 'ax3DLimit', 'ax3DView'}, ['VG_3D_' fname]);
+    end
+
+    function onImport3D(~,~)
+        [fname, fpath] = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
+        if fname ~= 0
+            onClear3D();
+            finput = load([fpath '\' fname]);
+
+            ax3DLimit = finput.ax3DLimit;
+            set(h.ax3D, 'XLim', ax3DLimit(1,:));
+            set(h.ax3D, 'YLim', ax3DLimit(2,:));
+            set(h.ax3D, 'ZLim', ax3DLimit(3,:));
+
+            ax3DView = finput.ax3DView;
+            set(h.ax3D, 'View', ax3DView);
+            
+            ptsAtery3D = finput.ptsAtery3D;
+            adjAtery3D = finput.adjAtery3D;
+            labelAtery3D = finput.labelAtery3D;
+
+            ptsVein3D = finput.ptsVein3D;
+            adjVein3D = finput.adjVein3D;
+            labelVein3D = finput.labelVein3D;
+
+            set(h.list3D, 'Value', 1)
+            redraw3D();
+        end
+    end
 
 end
