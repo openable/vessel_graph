@@ -794,6 +794,23 @@ redraw();
     end
 
     function redraw3D()
+        % 선분 그리기 단계
+        % 동맥
+        p = nan(3*nnz(adjAtery3D),3);
+        for q = 1:size(labelAtery3D,1)
+            p(1+3*(q-1),:) = ptsAtery3D(labelAtery3D{q,1},:);
+            p(2+3*(q-1),:) = ptsAtery3D(labelAtery3D{q,2},:);
+        end
+        set(h.edgesAtery3D, 'XData',p(:,1), 'YData',p(:,2), 'ZData',p(:,3))
+        if ishghandle(h.vesselsAtery3D), delete(h.vesselsAtery3D); end
+        h.vesselsAtery3D = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, (p(1:3:end,3)+p(2:3:end,3))/2+8, ...
+            strcat(labelAtery3D(:,3)), ...  % label(:)
+            'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
+            'VerticalAlign','bottom', 'HorizontalAlign','left');
+        if ~isempty(selectIdxAtery3D)
+            set(h.vesselsAtery3D(selectIdxAtery3D), 'Color', 'g')
+        end
+
         % 점 그리기 단계
         % 동맥
         set(h.ptsAtery3D, 'XData', ptsAtery3D(:,1), 'YData', ptsAtery3D(:,2), 'ZData',ptsAtery3D(:,3))
@@ -877,7 +894,18 @@ function onMouseDown3D(~,~)
                     % starting node (requires a second click to finish)
                     prevIdxAtery3D = pointCloudIndex;
                 else
-                    prevIdxAtery3D = pointCloudIndex;
+                    idx = pointCloudIndex;
+                    if adjAtery3D(prevIdxAtery3D,idx) ~= 1 && adjAtery3D(idx,prevIdxAtery3D) ~= 1
+                        adjAtery3D(prevIdxAtery3D,idx) = 1;
+                        m = size(labelAtery3D,1);
+                        labelAtery3D{m+1,1} = prevIdxAtery3D;
+                        labelAtery3D{m+1,2} = idx;
+                        labelAtery3D{m+1,3} = strcat('A', num2str(m+1));
+                    else
+                        % warndlg('두 점은 이미 연결되었습니다.','거절')
+                    end
+                    prevIdxAtery3D = [];
+                    set(h.delete3D, 'Enable', 'off')
                 end
                 
 %                fprintf('you clicked on point number %d\n', pointCloudIndex);
