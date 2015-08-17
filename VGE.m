@@ -786,9 +786,17 @@ redraw();
     function onSetVertices(~,~)
         dcm = datacursormode(h.fig);
         data3 = getCursorInfo(dcm);
-        for n = 1:size(data3,2);
-            ptsAtery3D(n,:) = data3(n).Position;
-            adjAtery3D(n,n) = 0;
+        if isempty(ptsAtery3D)
+            for n = 1:size(data3,2);
+                ptsAtery3D(n,:) = data3(n).Position;
+                adjAtery3D(n,n) = 0;
+            end
+        else
+            listN = size(ptsAtery3D,1);
+            for n = 1:size(data3,2);
+                ptsAtery3D(listN+n,:) = data3(n).Position;
+                adjAtery3D(listN+n,listN+n) = 0;
+            end
         end
         
         set(h.p3DH, 'HitTest','off');
@@ -839,25 +847,60 @@ redraw();
 
     function onClear3D(~,~)
         % reset everything
-        prevIdxAtery3D = [];
-        selectIdxAtery3D = [];
-        ptsAtery3D = zeros(0,3);
-        adjAtery3D = sparse([]);
-        labelAtery3D = cell(0,3);      % label 엣지 정보 제거 추가
-        
-        prevIdxVein3D = [];
-        selectIdxVein3D = [];
-        ptsVein3D = zeros(0,3);
-        adjVein3D = sparse([]);
-        labelVein3D = cell(0,3);      % label 엣지 정보 제거 추가
-        
-        % update GUI
-        set(h.labelEdit3D, 'String', '')
-        set(h.labelEdit3D, 'Enable', 'off')
-        set(h.labelSet3D, 'Enable', 'off')
-        set(h.delete3D, 'Enable', 'off')
-        set(h.list3D, 'Value', -1)
-        redraw3D()
+        if isempty(prevIdxAtery3D)
+            prevIdxAtery3D = [];
+            selectIdxAtery3D = [];
+            ptsAtery3D = zeros(0,3);
+            adjAtery3D = sparse([]);
+            labelAtery3D = cell(0,3);      % label 엣지 정보 제거 추가
+
+            prevIdxVein3D = [];
+            selectIdxVein3D = [];
+            ptsVein3D = zeros(0,3);
+            adjVein3D = sparse([]);
+            labelVein3D = cell(0,3);      % label 엣지 정보 제거 추가
+
+            % update GUI
+            set(h.labelEdit3D, 'String', '')
+            set(h.labelEdit3D, 'Enable', 'off')
+            set(h.labelSet3D, 'Enable', 'off')
+            set(h.delete3D, 'Enable', 'off')
+            set(h.list3D, 'Value', -1)
+            redraw3D()
+        else
+            idx = prevIdxAtery3D;
+
+            % 꼭지점 삭제 단계
+            ptsAtery3D(idx,:) = [];
+
+            % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
+            adjAtery3D(:,idx) = [];
+            adjAtery3D(idx,:) = [];
+
+            rowList = [];
+            for q = 1:size(labelAtery3D,1)
+                if labelAtery3D{q,1} == idx || labelAtery3D{q,2} == idx
+                    rowList = [rowList q];
+                end
+            end
+            labelAtery3D(rowList,:) = [];
+            for q = 1:size(labelAtery3D,1)
+                if labelAtery3D{q,1} > idx
+                    labelAtery3D{q,1} = labelAtery3D{q,1}-1;
+                end
+
+                if labelAtery3D{q,2} > idx
+                    labelAtery3D{q,2} = labelAtery3D{q,2}-1;
+                end
+
+                if isempty(labelAtery3D{q,4}) || labelAtery3D{q,4} == 0
+                    labelAtery3D{q,3} = ['A' num2str(q)];
+                end
+            end
+
+            prevIdxAtery3D = [];
+            redraw3D()
+        end
     end
 
 function onMouseDown3D(~,~)
