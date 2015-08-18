@@ -1034,22 +1034,84 @@ end
         end
     end
 
-function output_txt = dataText(obj,event_obj)
-% Display the position of the data cursor
-% obj          Currently not used (empty)
-% event_obj    Handle to event object
-% output_txt   Data cursor text string (string or cell array of strings).
+    function output_txt = dataText(obj,event_obj)
+    % Display the position of the data cursor
+    % obj          Currently not used (empty)
+    % event_obj    Handle to event object
+    % output_txt   Data cursor text string (string or cell array of strings).
 
-% pos = get(event_obj,'Position');
-% output_txt = {['X: ',num2str(pos(1),4)],...
-%     ['Y: ',num2str(pos(2),4)]};
-% 
-% % If there is a Z-coordinate in the position, display it as well
-% if length(pos) > 2
-%     output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
-% end
-output_txt = '';
+    % pos = get(event_obj,'Position');
+    % output_txt = {['X: ',num2str(pos(1),4)],...
+    %     ['Y: ',num2str(pos(2),4)]};
+    % 
+    % % If there is a Z-coordinate in the position, display it as well
+    % if length(pos) > 2
+    %     output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
+    % end
+        output_txt = '';
 
-end
+    end
+
+    function onSelect3D(~,~)
+        % update index of currently selected node
+        prevIdxAtery3D = [];
+        prevIdxVein3D = [];
+        
+        % 리스트 박스가 비었을 때 (초기 생성, 삭제하다가 모든 아이템 삭제) Value 값 조절
+        if ~isempty(get(h.list3D, 'String'))
+            if vesselState
+                selectIdxAtery3D = get(h.list3D, 'Value');
+                set(h.labelEdit3D, 'String', labelAtery3D{selectIdxAtery3D, 3})
+            else
+                selectIdxVein3D = get(h.list3D, 'Value');
+                set(h.labelEdit3D, 'String', labelVein3D{selectIdxVein3D, 3})
+            end
+            
+            set(h.labelEdit3D, 'Enable', 'on')
+            set(h.delete3D, 'Enable', 'on')
+            set(h.labelSet3D, 'Enable', 'on')
+        else
+            set(h.list3D, 'Value', -1)
+        end
+        
+        % 선분 라벨 편집 text editor에 커서 자동 위치
+        uicontrol(h.labelEdit3D);
+        redraw3D()
+    end
+
+    function onLabelSet3D(~,~)
+        if strcmp(set(h.labelEdit3D, 'Enable'), 'off'), return; end
+        
+        if vesselState
+            labelAtery3D{selectIdxAtery3D,3} = get(h.labelEdit3D, 'String');
+            labelAtery3D{selectIdxAtery3D,4} = 1;
+        else
+            labelVein3D{selectIdxVein3D,3} = get(h.labelEdit, 'String');
+            labelVein3D{selectIdxVein3D,4} = 1;
+        end
+        
+        selectIdxAtery3D = [];
+        selectIdxVein3D = [];
+        set(h.labelEdit3D, 'String', '')
+        set(h.labelEdit3D, 'Enable', 'off')
+        set(h.labelSet3D, 'Enable', 'off')
+        redraw3D()
+    end
+
+    function onEditKey3D(~,~)
+        % text edit 창에서 Enter, ESC 키보드 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+        
+        if isequal(key,char(13))
+            % 포커스를 옆에 set 버튼으로 이동, 그래야 현재 편집 정보 반영 됨
+            uicontrol(h.labelSet3D);
+            onLabelSet3D();
+        elseif isequal(key,char(27))
+            selectIdxAtery3D = [];
+            selectIdxVein3D = [];
+            uicontrol(h.labelSet3D);
+%            setCategory();
+        end
+    end
 
 end
