@@ -151,10 +151,10 @@ redraw();
             'Position',[20 200 130 20], 'Callback',@onClearModel3D, 'Enable', 'on');
         h.cursor3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','데이터 커서 모드', ...
             'Position',[20 170 130 20], 'Callback',@onCursor3D, 'Enable', 'on');
-        h.setVertices = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','꼭지점 설정', ...
+        h.setVertices = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 점 설정', ...
             'Position',[20 140 130 20], 'Callback',@onSetVertices, 'Enable', 'on');
-        h.delete3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','점/선분 삭제', ...
-            'Position',[20 110 130 20], 'Callback',@onDelete3D, 'Enable', 'off');
+        h.deleteGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 점/선분 삭제', ...
+            'Position',[20 110 130 20], 'Callback',@onDeleteGraph3D, 'Enable', 'off');
         h.clearGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 초기화', ...
             'Position',[20 80 130 20], 'Callback',@onClearGraph3D);
         h.importGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 가져오기', ...
@@ -376,7 +376,6 @@ redraw();
         if vesselState
             if ~isempty(prevIdxAtery)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxAtery;
-                %            prevIdx = [];              %밑에서 초기화 하니 불필요 예상됨
                 
                 % 꼭지점 삭제 단계
                 ptsAtery(idx,:) = [];
@@ -407,7 +406,7 @@ redraw();
                 end
                 
             else
-                idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
+                idx = get(h.list, 'Value');     % 선분 지울 때
                 adjAtery(labelAtery{idx,1}, labelAtery{idx,2}) = 0;
                 labelAtery(idx,:) = [];
                 
@@ -420,19 +419,8 @@ redraw();
             
             
             % clear previous selections
-            if prevIdxAtery == idx
-                prevIdxAtery = [];
-            end
+            prevIdxAtery = [];
             selectIdxAtery = [];
-            
-            if strcmp(get(h.labelEdit, 'Enable'), 'on')
-                set(h.labelEdit, 'String', '')
-                set(h.labelEdit, 'Enable', 'off')
-            end
-            
-            if strcmp(get(h.labelSet, 'Enable'), 'on')
-                set(h.labelSet, 'Enable', 'off')
-            end
             
         else
             if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
@@ -467,7 +455,7 @@ redraw();
                 end
                 
             else
-                idx = get(h.list, 'Value');     % 선분만 지울 때 (꼭지점은 그대로)
+                idx = get(h.list, 'Value');     % 선분 지울 때
                 adjVein(labelVein{idx,1}, labelVein{idx,2}) = 0;
                 labelVein(idx,:) = [];
                 
@@ -478,24 +466,20 @@ redraw();
                 end
             end
             
-            
             % clear previous selections
-            if prevIdxVein == idx
-                prevIdxVein = [];
-            end
+            prevIdxVein = [];
             selectIdxVein = [];
-            
-            if strcmp(get(h.labelEdit, 'Enable'), 'on')
-                set(h.labelEdit, 'String', '')
-                set(h.labelEdit, 'Enable', 'off')
-            end
-            
-            if strcmp(get(h.labelSet, 'Enable'), 'on')
-                set(h.labelSet, 'Enable', 'off')
-            end
         end
         
         % update GUI
+        if strcmp(get(h.labelEdit, 'Enable'), 'on')
+            set(h.labelEdit, 'String', '')
+            set(h.labelEdit, 'Enable', 'off')
+        end
+
+        if strcmp(get(h.labelSet, 'Enable'), 'on')
+            set(h.labelSet, 'Enable', 'off')
+        end
         set(h.list, 'Value',1)
         set(h.delete, 'Enable', 'off')
         redraw()
@@ -851,29 +835,8 @@ redraw();
         delete(h.p3DH);
     end
 
-    function onClearGraph3D(~,~)
-        % reset everything
-        if isempty(prevIdxAtery3D)
-            prevIdxAtery3D = [];
-            selectIdxAtery3D = [];
-            ptsAtery3D = zeros(0,3);
-            adjAtery3D = sparse([]);
-            labelAtery3D = cell(0,3);      % label 엣지 정보 제거 추가
-
-            prevIdxVein3D = [];
-            selectIdxVein3D = [];
-            ptsVein3D = zeros(0,3);
-            adjVein3D = sparse([]);
-            labelVein3D = cell(0,3);      % label 엣지 정보 제거 추가
-
-            % update GUI
-            set(h.labelEdit3D, 'String', '')
-            set(h.labelEdit3D, 'Enable', 'off')
-            set(h.labelSet3D, 'Enable', 'off')
-            set(h.delete3D, 'Enable', 'off')
-            set(h.list3D, 'Value', -1)
-            redraw3D()
-        else
+    function onDeleteGraph3D(~,~)
+        if ~isempty(prevIdxAtery3D)
             idx = prevIdxAtery3D;
 
             % 꼭지점 삭제 단계
@@ -904,9 +867,57 @@ redraw();
                 end
             end
 
-            prevIdxAtery3D = [];
-            redraw3D()
+        else
+            idx = get(h.list3D, 'Value');     % 선분 지울 때
+            adjAtery3D(labelAtery3D{idx,1}, labelAtery3D{idx,2}) = 0;
+            labelAtery3D(idx,:) = [];
+
+            for q = 1:size(labelAtery3D,1)
+                if isempty(labelAtery3D{q,4}) || labelAtery3D{q,4} == 0
+                    labelAtery3D{q,3} = ['A' num2str(q)];
+                end
+            end
         end
+        
+        prevIdxAtery3D = [];
+        selectIdxAtery3D = [];
+        
+        if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
+            set(h.labelEdit3D, 'String', '')
+            set(h.labelEdit3D, 'Enable', 'off')
+        end
+
+        if strcmp(get(h.labelSet3D, 'Enable'), 'on')
+            set(h.labelSet3D, 'Enable', 'off')
+        end
+
+        % update GUI
+        set(h.list3D, 'Value',1)
+        set(h.deleteGraph3D, 'Enable', 'off')
+        redraw3D()
+    end
+
+    function onClearGraph3D(~,~)
+        % reset everything
+        prevIdxAtery3D = [];
+        selectIdxAtery3D = [];
+        ptsAtery3D = zeros(0,3);
+        adjAtery3D = sparse([]);
+        labelAtery3D = cell(0,3);      % label 엣지 정보 제거 추가
+
+        prevIdxVein3D = [];
+        selectIdxVein3D = [];
+        ptsVein3D = zeros(0,3);
+        adjVein3D = sparse([]);
+        labelVein3D = cell(0,3);      % label 엣지 정보 제거 추가
+
+        % update GUI
+        set(h.labelEdit3D, 'String', '')
+        set(h.labelEdit3D, 'Enable', 'off')
+        set(h.labelSet3D, 'Enable', 'off')
+        set(h.deleteGraph3D, 'Enable', 'off')
+        set(h.list3D, 'Value', -1)
+        redraw3D()
     end
 
 function onMouseDown3D(~,~)
@@ -955,6 +966,7 @@ function onMouseDown3D(~,~)
                 if isempty(prevIdxAtery3D)
                     % starting node (requires a second click to finish)
                     prevIdxAtery3D = pointCloudIndex;
+                    set(h.deleteGraph3D, 'Enable', 'on')
                 else
                     idx = pointCloudIndex;
                     if adjAtery3D(prevIdxAtery3D,idx) ~= 1 && adjAtery3D(idx,prevIdxAtery3D) ~= 1
@@ -967,7 +979,7 @@ function onMouseDown3D(~,~)
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
                     prevIdxAtery3D = [];
-                    set(h.delete3D, 'Enable', 'off')
+                    set(h.deleteGraph3D, 'Enable', 'off')
                 end
                 
 %                fprintf('you clicked on point number %d\n', pointCloudIndex);
@@ -1074,7 +1086,7 @@ end
             end
             
             set(h.labelEdit3D, 'Enable', 'on')
-            set(h.delete3D, 'Enable', 'on')
+            set(h.deleteGraph3D, 'Enable', 'on')
             set(h.labelSet3D, 'Enable', 'on')
         else
             set(h.list3D, 'Value', -1)
