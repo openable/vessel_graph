@@ -134,31 +134,33 @@ redraw();
             'Position',[90 800 60 20],'Callback',@onVein3D);
         h.list3D = uicontrol('Style','listbox', 'Parent',h.tab2, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
-            'Position',[20 290 130 500], 'Callback',@onSelect3D); % 140
+            'Position',[20 320 130 470], 'Callback',@onSelect3D); % 140
         h.labelText3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
-            'Position',[20 260 40 20]);
+            'Position',[20 290 40 20]);
         h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 260 60 20], 'KeyPressFcn',@onEditKey3D);
+            'Position',[60 290 60 20], 'KeyPressFcn',@onEditKey3D);
         h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 260 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 290 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
         h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 불러오기', ...
-            'Position',[20 230 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
+            'Position',[20 260 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
         h.hide3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 감추기/보이기', ...
-            'Position',[20 200 130 20], 'Callback',@onHide3D, 'Enable', 'on');
+            'Position',[20 230 130 20], 'Callback',@onHide3D, 'Enable', 'on');
+        h.clearModel3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 초기화', ...
+            'Position',[20 200 130 20], 'Callback',@onClearModel3D, 'Enable', 'on');
         h.cursor3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','데이터 커서 모드', ...
             'Position',[20 170 130 20], 'Callback',@onCursor3D, 'Enable', 'on');
         h.setVertices = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','꼭지점 설정', ...
             'Position',[20 140 130 20], 'Callback',@onSetVertices, 'Enable', 'on');
         h.delete3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','점/선분 삭제', ...
             'Position',[20 110 130 20], 'Callback',@onDelete3D, 'Enable', 'off');
-        h.clear3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','초기화', ...
-            'Position',[20 80 130 20], 'Callback',@onClear3D);
-        h.import3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','가져오기', ...
-            'Position',[20 50 130 20], 'Callback',@onImport3D);
-        h.export3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','내보내기', ...
-            'Position',[20 20 130 20], 'Callback',@onExport3D);
+        h.clearGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 초기화', ...
+            'Position',[20 80 130 20], 'Callback',@onClearGraph3D);
+        h.importGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 가져오기', ...
+            'Position',[20 50 130 20], 'Callback',@onImportGraph3D);
+        h.exportGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 내보내기', ...
+            'Position',[20 20 130 20], 'Callback',@onExportGraph3D);
         
         
         
@@ -740,7 +742,6 @@ redraw();
             h.p3DH = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
                      'FaceColor',       [0.8 0.8 1.0], ...
                      'EdgeColor',       'none',        ...
-                     'FaceLighting',    'gouraud',     ...
                      'AmbientStrength', 0.15,           ...
                      'HitTest','off', ...
                      'Parent', h.ax3D);
@@ -846,7 +847,11 @@ redraw();
         drawnow
     end
 
-    function onClear3D(~,~)
+    function onClearModel3D(~,~)
+        delete(h.p3DH);
+    end
+
+    function onClearGraph3D(~,~)
         % reset everything
         if isempty(prevIdxAtery3D)
             prevIdxAtery3D = [];
@@ -1001,17 +1006,17 @@ function onMouseDown3D(~,~)
          redraw3D()
 end
 
-    function onExport3D(~,~)
+    function onExportGraph3D(~,~)
         ax3DLimit = [get(h.ax3D, 'XLim');get(h.ax3D, 'YLim');get(h.ax3D, 'ZLim')];
         ax3DView = get(h.ax3D, 'View');
         fname = datestr(now,'yymmddHHMMSS');
         uisave({'ptsAtery3D', 'adjAtery3D', 'labelAtery3D', 'ptsVein3D', 'adjVein3D', 'labelVein3D', 'ax3DLimit', 'ax3DView'}, ['VG_3D_' fname]);
     end
 
-    function onImport3D(~,~)
+    function onImportGraph3D(~,~)
         [fname, fpath] = uigetfile('*.mat','가져올 MATLAB 그래프 파일(.mat)을 선택하세요.');
         if fname ~= 0
-            onClear3D();
+            onClearGraph3D();
             finput = load([fpath '\' fname]);
 
             ax3DLimit = finput.ax3DLimit;
