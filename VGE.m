@@ -145,7 +145,7 @@ redraw();
             'Position',[125 260 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
         h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 불러오기', ...
             'Position',[20 230 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
-        h.hide3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 감추기', ...
+        h.hide3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 감추기/보이기', ...
             'Position',[20 200 130 20], 'Callback',@onHide3D, 'Enable', 'on');
         h.cursor3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','데이터 커서 모드', ...
             'Position',[20 170 130 20], 'Callback',@onCursor3D, 'Enable', 'on');
@@ -759,7 +759,8 @@ redraw();
     end
 
     function onHide3D(~,~)
-%        if isfield(h.p3DH), return, end
+        if ~isfield(h, 'p3DH'), return, end
+        if isempty(h.p3DH), return, end
 
         if strcmp(get(h.p3DH, 'Visible'), 'on')
             set(h.ax3D, 'XLimMode', 'manual', 'YLimMode', 'manual', 'ZLimMode', 'manual')
