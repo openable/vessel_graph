@@ -129,25 +129,28 @@ redraw();
             'XTick',[], 'YTick',[], 'ZTick',[], 'Box','on', ... 
             'Units','pixels', 'Position',[160 20 800 800]);
         view(h.ax3D, 3);
+        camlight('headlight');
         h.rA3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Artery', ...
             'Position',[20 800 60 20],'Value',1,'Callback',@onArtery3D);
         h.rV3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Vein', ...
             'Position',[90 800 60 20],'Callback',@onVein3D);
         h.list3D = uicontrol('Style','listbox', 'Parent',h.tab2, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
-            'Position',[20 320 130 470], 'Callback',@onSelect3D); % 140
+            'Position',[20 350 130 440], 'Callback',@onSelect3D); % 140
         h.labelText3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
-            'Position',[20 290 40 20]);
+            'Position',[20 320 40 20]);
         h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 290 60 20], 'KeyPressFcn',@onEditKey3D);
+            'Position',[60 320 60 20], 'KeyPressFcn',@onEditKey3D);
         h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 290 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 320 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
         
-        h.area3D = uipanel('Parent', h.tab2, 'Title', '', 'Units', 'pixels', 'Position', [15 165 140 120]);
-        h.open3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 불러오기', ...
-            'Position',[20 260 130 20], 'Callback',@onOpen3D, 'Enable', 'on');
+        h.area3D = uipanel('Parent', h.tab2, 'Title', '', 'Units', 'pixels', 'Position', [15 165 140 150]);
+        h.open3DArtery = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 동맥 모델 불러오기', ...
+            'Position',[20 290 130 20], 'Callback',@onOpen3DArtery, 'Enable', 'on');
+        h.open3DVein = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 정맥 모델 불러오기', ...
+            'Position',[20 260 130 20], 'Callback',@onOpen3DVein, 'Enable', 'on');
         h.hide3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 감추기/보이기', ...
             'Position',[20 230 130 20], 'Callback',@onHide3D, 'Enable', 'on');
         h.clearModel3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 모델 초기화', ...
@@ -723,25 +726,23 @@ redraw();
 
 
 %% 3D 구현
-    function onOpen3D(~,~)
+    function onOpen3DArtery(~,~)
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
         %stlread에서 속도 더빠린 stlreadF로 변경
         if fname ~= 0
             [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
             [v, f]=patchslim(v, f);
 
-            h.p3DH = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
-                     'FaceColor',       [0.8 0.8 1.0], ...
+            h.p3DHArtery = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
+                     'FaceColor',       [0.9 0.6 0.9], ...
                      'EdgeColor',       'none',        ...
                      'AmbientStrength', 0.15,           ...
                      'HitTest','off', ...
                      'Parent', h.ax3D);
-
-
-            % Add a camera light, and tone down the specular highlighting
-            camlight('headlight');
-            material('dull');
-
+%             % Add a camera light, and tone down the specular highlighting
+%             camlight('headlight');
+             material('dull');
+             
             % Fix the axes scaling, and set a nice view angle
             axis('image');
             view([20 29]);
@@ -750,15 +751,44 @@ redraw();
         end
     end
 
-    function onHide3D(~,~)
-        if ~isfield(h, 'p3DH'), return, end
-        if isempty(h.p3DH), return, end
+    function onOpen3DVein(~,~)
+        [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
+        %stlread에서 속도 더빠린 stlreadF로 변경
+        if fname ~= 0
+            [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
+            [v, f]=patchslim(v, f);
 
-        if strcmp(get(h.p3DH, 'Visible'), 'on')
+            h.p3DHVein = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
+                     'FaceColor',       [0.8 0.8 1.0], ...
+                     'EdgeColor',       'none',        ...
+                     'AmbientStrength', 0.15,           ...
+                     'HitTest','off', ...
+                     'Parent', h.ax3D);
+
+
+%             % Add a camera light, and tone down the specular highlighting
+%             camlight('headlight');
+             material('dull');
+% 
+%             % Fix the axes scaling, and set a nice view angle
+%             axis('image');
+%             view([20 29]);
+%             
+%             set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
+        end
+    end
+
+    function onHide3D(~,~)
+        if ~isfield(h, 'p3DHArtery') || ~isfield(h, 'p3DHVein'), return, end
+        if isempty(h.p3DHArtery) || isempty(h.p3DHVein), return, end
+
+        if strcmp(get(h.p3DHArtery, 'Visible'), 'on')
             set(h.ax3D, 'XLimMode', 'manual', 'YLimMode', 'manual', 'ZLimMode', 'manual')
-            set(h.p3DH, 'Visible', 'off');
+            set(h.p3DHArtery, 'Visible', 'off');
+            set(h.p3DHVein, 'Visible', 'off');
         else
-            set(h.p3DH, 'Visible', 'on');
+            set(h.p3DHArtery, 'Visible', 'on');
+            set(h.p3DHVein, 'Visible', 'on');
             set(h.ax3D, 'XLimMode', 'auto', 'YLimMode', 'auto', 'ZLimMode', 'auto')
         end
     end
@@ -772,16 +802,18 @@ redraw();
         else
             set(dcm, 'enable', 'on');
             set(dcm, 'SnapToDataVertex','off');
-            set(h.p3DH, 'HitTest','on');
+            set(h.p3DHArtery, 'HitTest','on');
+            set(h.p3DHVein, 'HitTest','on');
         end
     end
 
     function onSetTips(~,~)
-        set(h.p3DH, 'HitTest','on');
+        set(h.p3DHArtery, 'HitTest','on');
+        set(h.p3DHVein, 'HitTest','on');
         dcm = datacursormode(h.fig);
         data3 = getCursorInfo(dcm);
         for n = 1:size(ptsAtery3D,1)
-            data3(n).Target = h.p3DH;
+            data3(n).Target = h.p3DHArtery;
             data3(n).Position = ptsAtery3D(n,:);
         end
         hh=findall(gca,'Type','hggroup','draggable','on','Marker','square');
@@ -806,7 +838,8 @@ redraw();
             end
         end
         
-        set(h.p3DH, 'HitTest','off');
+        set(h.p3DHArtery, 'HitTest','off');
+        set(h.p3DHVein, 'HitTest','off');
         redraw3D();
     end
 
@@ -853,7 +886,8 @@ redraw();
     end
 
     function onClearModel3D(~,~)
-        delete(h.p3DH);
+        delete(h.p3DHArtery);
+        delete(h.p3DHVein);
     end
 
     function onDeleteGraph3D(~,~)
