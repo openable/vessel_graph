@@ -176,8 +176,6 @@ redraw();
             'Position',[20 50 130 20], 'Callback',@onImportGraph3D);
         h.exportGraph3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','그래프 내보내기', ...
             'Position',[20 20 130 20], 'Callback',@onExportGraph3D);
-%        h.boundary = line([18 165; 18 285], [152 165; 152 285], 'Parent',h.tab2, 'HitTest','off', ...
-%            'LineWidth',1, 'Color','r');
         
         
         
@@ -195,6 +193,9 @@ redraw();
         h.prevAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
+        % 리스트박스 선택된 선분 녹색 강조
+        h.selectArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
+            'LineWidth',2, 'Color','g');
         % 선분 목록
         h.edgesAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
@@ -213,6 +214,9 @@ redraw();
         h.prevVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
+        % 리스트박스 선택된 선분 녹색 강조
+        h.selectVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
+            'LineWidth',2, 'Color','g');
         % 선분 목록
         h.edgesVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'LineWidth',2, 'Color','b');
@@ -884,6 +888,11 @@ redraw();
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxAtery3D)
             set(h.vesselsAtery3D(selectIdxAtery3D), 'Color', 'g')
+            if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
+            h.selectArtery3D = line(p((selectIdxAtery3D-1)*3+1:(selectIdxAtery3D-1)*3+2,1), ...
+                p((selectIdxAtery3D-1)*3+1:(selectIdxAtery3D-1)*3+2,2), ...,
+                p((selectIdxAtery3D-1)*3+1:(selectIdxAtery3D-1)*3+2,3), ...,
+                'Parent',h.ax3D, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
 
         % 점 그리기 단계
@@ -1002,10 +1011,13 @@ redraw();
 
 function onMouseDown3D(~,~)
             % get location of mouse click (in data coordinates)
-%         if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
-%             set(h.labelEdit3D, 'String', '')
-%             set(h.labelEdit3D, 'Enable', 'off')
-%         end
+        if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
+            set(h.labelEdit3D, 'String', '')
+            set(h.labelEdit3D, 'Enable', 'off')
+        end
+        
+        if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
+        if ishghandle(h.selectVein3D), delete(h.selectVein3D); end
         
         if vesselState == 1
             % 동맥 처리 (Atery)
@@ -1096,7 +1108,7 @@ function onMouseDown3D(~,~)
         
          % update GUI
          redraw3D()
-end
+    end
 
     function onExportGraph3D(~,~)
         ax3DLimit = [get(h.ax3D, 'XLim');get(h.ax3D, 'YLim');get(h.ax3D, 'ZLim')];
@@ -1132,7 +1144,7 @@ end
         end
     end
 
-    function output_txt = dataText(obj,event_obj)
+    function output_txt = dataText(~,~)
         output_txt = '';
     end
 
