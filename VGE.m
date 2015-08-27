@@ -37,6 +37,7 @@ labelVein3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / �
 ax3DLimit = zeros(3,2);
 ax3DView = zeros(1,2);
 
+vesselState3D = 1;        % Artery (1) / Vein (0) state
 
 
 % create GUI
@@ -95,6 +96,9 @@ redraw();
         h.prevAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
+        % 리스트박스 선택된 선분 녹색 강조
+        h.selectArtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'LineWidth',2, 'Color','g');
         % 선분 목록
         h.edgesAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
@@ -113,6 +117,9 @@ redraw();
         h.prevVein = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
+        % 리스트박스 선택된 선분 녹색 강조
+        h.selectVein = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'LineWidth',2, 'Color','g');
         % 선분 목록
         h.edgesVein = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','b');
@@ -274,6 +281,9 @@ redraw();
             set(h.labelEdit, 'String', '')
             set(h.labelEdit, 'Enable', 'off')
         end
+        
+        if ishghandle(h.selectArtery), delete(h.selectArtery); end
+        if ishghandle(h.selectVein), delete(h.selectVein); end
         
         p = get(h.ax, 'CurrentPoint');
         
@@ -659,6 +669,10 @@ redraw();
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxAtery)
             set(h.vesselsAtery(selectIdxAtery), 'Color', 'g')
+            if ishghandle(h.selectArtery), delete(h.selectArtery); end
+            h.selectArtery = line(p((selectIdxAtery-1)*3+1:(selectIdxAtery-1)*3+2,1), ...
+                p((selectIdxAtery-1)*3+1:(selectIdxAtery-1)*3+2,2), ...,
+                'Parent',h.ax, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         % 정맥
         p = nan(3*nnz(adjVein),2);
@@ -674,6 +688,10 @@ redraw();
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxVein)
             set(h.vesselsVein(selectIdxVein), 'Color', 'g')
+            if ishghandle(h.selectVein), delete(h.selectVein); end
+            h.selectVein = line(p((selectIdxVein-1)*3+1:(selectIdxVein-1)*3+2,1), ...
+                p((selectIdxVein-1)*3+1:(selectIdxVein-1)*3+2,2), ...,
+                'Parent',h.ax, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         
         % 점 그리기 단계
@@ -726,27 +744,52 @@ redraw();
 
 
 %% 3D 구현
+    function onArtery3D(~,~)
+        h.rV3D.Value = ~h.rA3D.Value;
+        setCategory3D()
+    end
+
+    function onVein3D(~,~)
+        h.rA3D.Value = ~h.rV3D.Value;
+        setCategory3D()
+    end
+
+    function setCategory3D()
+        if h.rA3D.Value == 1
+            vesselState3D = 1;
+            prevIdxVein3D = [];
+            selectIdxVein3D = [];
+        else    %h.rV.Value == 1
+            vesselState3D = 0;
+            prevIdxAtery3D = [];
+            selectIdxAtery3D = [];
+        end
+        
+        set(h.labelEdit3D, 'String', '')
+        set(h.labelEdit3D, 'Enable', 'off')
+        set(h.labelSet3D, 'Enable', 'off')
+        set(h.deleteGraph3D, 'Enable', 'off')
+        redraw3D()
+    end
+
     function onOpen3DArtery(~,~)
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
         %stlread에서 속도 더빠린 stlreadF로 변경
         if fname ~= 0
             [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
             [v, f]=patchslim(v, f);
-
+            
             h.p3DHArtery = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
-                     'FaceColor',       [0.9 0.6 0.9], ...
-                     'EdgeColor',       'none',        ...
-                     'AmbientStrength', 0.15,           ...
-                     'HitTest','off', ...
-                     'Parent', h.ax3D);
-%             % Add a camera light, and tone down the specular highlighting
-%             camlight('headlight');
-             material('dull');
-             
-            % Fix the axes scaling, and set a nice view angle
+                'FaceColor',       [0.9 0.6 0.9], ...
+                'EdgeColor',       'none',        ...
+                'FaceAlpha',       0.5,        ...
+                'AmbientStrength', 0.15,           ...
+                'HitTest','off', ...
+                'Parent', h.ax3D);
+            
+            material('dull');
             axis('image');
             view([20 29]);
-            
             set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
         end
     end
@@ -757,24 +800,19 @@ redraw();
         if fname ~= 0
             [v, f, n, c, stltitle] = stlreadF([fpath '\' fname]);
             [v, f]=patchslim(v, f);
-
+            
             h.p3DHVein = patch('Faces',f,'Vertices',v,'FaceVertexCData',c, ...
-                     'FaceColor',       [0.8 0.8 1.0], ...
-                     'EdgeColor',       'none',        ...
-                     'AmbientStrength', 0.15,           ...
-                     'HitTest','off', ...
-                     'Parent', h.ax3D);
-
-
-%             % Add a camera light, and tone down the specular highlighting
-%             camlight('headlight');
-             material('dull');
-% 
-%             % Fix the axes scaling, and set a nice view angle
-%             axis('image');
-%             view([20 29]);
-%             
-%             set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
+                'FaceColor',       [0.8 0.8 1.0], ...
+                'EdgeColor',       'none',        ...
+                'FaceAlpha',       0.5,        ...
+                'AmbientStrength', 0.15,           ...
+                'HitTest','off', ...
+                'Parent', h.ax3D);
+            
+            material('dull');
+            axis('image');
+            view([20 29]);
+            set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
         end
     end
 
@@ -805,19 +843,6 @@ redraw();
             set(h.p3DHArtery, 'HitTest','on');
             set(h.p3DHVein, 'HitTest','on');
         end
-    end
-
-    function onSetTips(~,~)
-        set(h.p3DHArtery, 'HitTest','on');
-        set(h.p3DHVein, 'HitTest','on');
-        dcm = datacursormode(h.fig);
-        data3 = getCursorInfo(dcm);
-        for n = 1:size(ptsAtery3D,1)
-            data3(n).Target = h.p3DHArtery;
-            data3(n).Position = ptsAtery3D(n,:);
-        end
-        hh=findall(gca,'Type','hggroup','draggable','on','Marker','square');
-        set(hh,'MarkerEdgeColor','r');
     end
 
     function onSetVertices(~,~)
@@ -1108,21 +1133,7 @@ end
     end
 
     function output_txt = dataText(obj,event_obj)
-    % Display the position of the data cursor
-    % obj          Currently not used (empty)
-    % event_obj    Handle to event object
-    % output_txt   Data cursor text string (string or cell array of strings).
-
-    % pos = get(event_obj,'Position');
-    % output_txt = {['X: ',num2str(pos(1),4)],...
-    %     ['Y: ',num2str(pos(2),4)]};
-    % 
-    % % If there is a Z-coordinate in the position, display it as well
-    % if length(pos) > 2
-    %     output_txt{end+1} = ['Z: ',num2str(pos(3),4)];
-    % end
         output_txt = '';
-
     end
 
     function onSelect3D(~,~)
