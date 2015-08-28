@@ -2,12 +2,12 @@ function VGE
 % data
 showVertices = true;   % flag to determine whether to show node labels
 
-prevIdxAtery = [];         % keeps track of 1st node clicked in creating edges
-selectIdxAtery = [];       % used to highlight node selected in listbox
+prevIdxArtery = [];         % keeps track of 1st node clicked in creating edges
+selectIdxArtery = [];       % used to highlight node selected in listbox
 
-ptsAtery = zeros(0,2);     % x/y coordinates of vertices
-adjAtery = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-labelAtery = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+ptsArtery = zeros(0,2);     % x/y coordinates of vertices
+adjArtery = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+labelArtery = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
 
 prevIdxVein = [];
 selectIdxVein = [];
@@ -19,13 +19,14 @@ labelVein = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레�
 vesselState = 1;        % Artery (1) / Vein (0) state
 
 
+showVertices3D = false;   % flag to determine whether to show node labels
 
-prevIdxAtery3D = [];         % keeps track of 1st node clicked in creating edges
-selectIdxAtery3D = [];       % used to highlight node selected in listbox
+prevIdxArtery3D = [];         % keeps track of 1st node clicked in creating edges
+selectIdxArtery3D = [];       % used to highlight node selected in listbox
 
-ptsAtery3D = zeros(0,3);     % x/y coordinates of vertices
-adjAtery3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-labelAtery3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+ptsArtery3D = zeros(0,3);     % x/y coordinates of vertices
+adjArtery3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
+labelArtery3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
 
 prevIdxVein3D = [];
 selectIdxVein3D = [];
@@ -87,25 +88,25 @@ redraw();
             'Callback',@onCMenu);
         set(h.list, 'UIContextMenu',h.cmenu)
         
-        % 동맥 (Atery)
+        % 동맥 (Artery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.ptsArtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
-        h.prevAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.prevArtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 리스트박스 선택된 선분 녹색 강조
         h.selectArtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','g');
         % 선분 목록
-        h.edgesAtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+        h.edgesArtery = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
-        h.verticesAtery = [];
+        h.verticesArtery = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
-        h.vesselsAtery = [];
+        h.vesselsArtery = [];
         
         
         % 정맥 (Vein)
@@ -180,35 +181,35 @@ redraw();
         
         
         h.cmenu3D = uicontextmenu('Parent',h.fig);
-        h.menu3D = uimenu(h.cmenu3D, 'Label','Show verticies', 'Checked','off', ...
-            'Callback',@onCMenu);
+        h.menu3D = uimenu(h.cmenu3D, 'Label','Show 3D verticies', 'Checked','off', ...
+            'Callback',@onCMenu3D);
         set(h.list3D, 'UIContextMenu',h.cmenu3D)
         
-        % 동맥 (Atery)
+        % 동맥 (Artery)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
-        h.ptsAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
+        h.ptsArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','r', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
-        h.prevAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
+        h.prevArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'Marker','o', 'MarkerSize',10, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 리스트박스 선택된 선분 녹색 강조
         h.selectArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'LineWidth',2, 'Color','g');
         % 선분 목록
-        h.edgesAtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
+        h.edgesArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
             'LineWidth',2, 'Color','r');
         % 꼭지점 라벨링 표시용 변수(기억용 아님). V1, V2, ... 순서대로
-        h.verticesAtery3D = [];
+        h.verticesArtery3D = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
-        h.vesselsAtery3D = [];
+        h.vesselsArtery3D = [];
         
         
         % 정맥 (Vein)
         % 꼭지점.. 직선에서 라인스타일을 None으로 해서 선은 안그리고 Marker만 찍게 함.
         h.ptsVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
-            'Marker','o', 'MarkerSize',20, 'MarkerFaceColor','b', ...
+            'Marker','o', 'MarkerSize',10, 'MarkerFaceColor','b', ...
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prevVein3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
@@ -227,8 +228,8 @@ redraw();
     end
 
     function initAxes(~,~)
-        ptsAtery(1,:) = [0 0];
-        adjAtery(end+1,end+1) = 0;
+        ptsArtery(1,:) = [0 0];
+        adjArtery(end+1,end+1) = 0;
         
         onClear();
     end
@@ -238,9 +239,9 @@ redraw();
         key = get(h.fig,'CurrentCharacter');
         
         if isequal(key,char(27))
-            prevIdxAtery = [];
+            prevIdxArtery = [];
             prevIdxVein = [];
-            selectIdxAtery = [];
+            selectIdxArtery = [];
             selectIdxVein = [];
             
             set(h.labelEdit, 'String', '')
@@ -268,8 +269,8 @@ redraw();
             selectIdxVein = [];
         else    %h.rV.Value == 1
             vesselState = 0;
-            prevIdxAtery = [];
-            selectIdxAtery = [];
+            prevIdxArtery = [];
+            selectIdxArtery = [];
         end
         
         set(h.labelEdit, 'String', '')
@@ -292,46 +293,46 @@ redraw();
         p = get(h.ax, 'CurrentPoint');
         
         if vesselState == 1
-            % 동맥 처리 (Atery)
+            % 동맥 처리 (Artery)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % add a new node
-                ptsAtery(end+1,:) = p(1,1:2);
-                adjAtery(end+1,end+1) = 0;
+                ptsArtery(end+1,:) = p(1,1:2);
+                adjArtery(end+1,end+1) = 0;
                 
-                selectIdxAtery = [];
+                selectIdxArtery = [];
                 selectIdxVein = [];
             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
-                if size(labelAtery,1) < 1, return; end
-                labelPts = getLabelPts(ptsAtery, labelAtery);
+                if size(labelArtery,1) < 1, return; end
+                labelPts = getLabelPts(ptsArtery, labelArtery);
                 [dst,idx] = min(sum(bsxfun(@minus, labelPts, p(1,1:2)).^2,2));
                 
-                if sqrt(dst) > 20, selectIdxAtery = []; setCategory(); return; end
+                if sqrt(dst) > 20, selectIdxArtery = []; setCategory(); return; end
                 onLabelEdit(idx);
             else
                 % hit test (find node closest to click location: euclidean distnce)
-                [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
+                [dst,idx] = min(sum(bsxfun(@minus, ptsArtery, p(1,1:2)).^2,2));
                 if sqrt(dst) > 8, return; end
                 set(h.delete, 'Enable', 'on')
                 
-                if isempty(prevIdxAtery)
+                if isempty(prevIdxArtery)
                     % starting node (requires a second click to finish)
-                    prevIdxAtery = idx;
+                    prevIdxArtery = idx;
                 else
                     % add the new edge % 선분 생성 단계
-                    if adjAtery(prevIdxAtery,idx) ~= 1 && adjAtery(idx,prevIdxAtery) ~= 1
-                        adjAtery(prevIdxAtery,idx) = 1;
-                        m = size(labelAtery,1);
-                        labelAtery{m+1,1} = prevIdxAtery;
-                        labelAtery{m+1,2} = idx;
-                        labelAtery{m+1,3} = strcat('A', num2str(m+1));
+                    if adjArtery(prevIdxArtery,idx) ~= 1 && adjArtery(idx,prevIdxArtery) ~= 1
+                        adjArtery(prevIdxArtery,idx) = 1;
+                        m = size(labelArtery,1);
+                        labelArtery{m+1,1} = prevIdxArtery;
+                        labelArtery{m+1,2} = idx;
+                        labelArtery{m+1,3} = strcat('A', num2str(m+1));
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
-                    prevIdxAtery = [];
+                    prevIdxArtery = [];
                     set(h.delete, 'Enable', 'off')
                 end
                 
-                selectIdxAtery = [];
+                selectIdxArtery = [];
                 selectIdxVein = [];
             end
         else
@@ -341,7 +342,7 @@ redraw();
                 ptsVein(end+1,:) = p(1,1:2);
                 adjVein(end+1,end+1) = 0;
                 
-                selectIdxAtery = [];
+                selectIdxArtery = [];
                 selectIdxVein = [];
             elseif strcmpi(get(h.fig,'SelectionType'), 'Extend')  %shift+마우스 왼쪽 클릭
                 if size(labelVein,1) < 1, return; end
@@ -374,7 +375,7 @@ redraw();
                     set(h.delete, 'Enable', 'off')
                 end
                 
-                selectIdxAtery = [];
+                selectIdxArtery = [];
                 selectIdxVein = [];
             end
         end
@@ -394,57 +395,57 @@ redraw();
 
     function onDelete(~,~)
         % check that list of nodes is not empty
-        if isempty(ptsAtery) && isempty(ptsVein), return; end
+        if isempty(ptsArtery) && isempty(ptsVein), return; end
         
         % delete selected node
         if vesselState
-            if ~isempty(prevIdxAtery)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
-                idx = prevIdxAtery;
+            if ~isempty(prevIdxArtery)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
+                idx = prevIdxArtery;
                 
                 % 꼭지점 삭제 단계
-                ptsAtery(idx,:) = [];
+                ptsArtery(idx,:) = [];
                 
                 % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
-                adjAtery(:,idx) = [];
-                adjAtery(idx,:) = [];
+                adjArtery(:,idx) = [];
+                adjArtery(idx,:) = [];
                 
                 rowList = [];
-                for q = 1:size(labelAtery,1)
-                    if labelAtery{q,1} == idx || labelAtery{q,2} == idx
+                for q = 1:size(labelArtery,1)
+                    if labelArtery{q,1} == idx || labelArtery{q,2} == idx
                         rowList = [rowList q];
                     end
                 end
-                labelAtery(rowList,:) = [];
-                for q = 1:size(labelAtery,1)
-                    if labelAtery{q,1} > idx
-                        labelAtery{q,1} = labelAtery{q,1}-1;
+                labelArtery(rowList,:) = [];
+                for q = 1:size(labelArtery,1)
+                    if labelArtery{q,1} > idx
+                        labelArtery{q,1} = labelArtery{q,1}-1;
                     end
                     
-                    if labelAtery{q,2} > idx
-                        labelAtery{q,2} = labelAtery{q,2}-1;
+                    if labelArtery{q,2} > idx
+                        labelArtery{q,2} = labelArtery{q,2}-1;
                     end
                     
-                    if isempty(labelAtery{q,4}) || labelAtery{q,4} == 0
-                        labelAtery{q,3} = ['A' num2str(q)];
+                    if isempty(labelArtery{q,4}) || labelArtery{q,4} == 0
+                        labelArtery{q,3} = ['A' num2str(q)];
                     end
                 end
                 
             else
                 idx = get(h.list, 'Value');     % 선분 지울 때
-                adjAtery(labelAtery{idx,1}, labelAtery{idx,2}) = 0;
-                labelAtery(idx,:) = [];
+                adjArtery(labelArtery{idx,1}, labelArtery{idx,2}) = 0;
+                labelArtery(idx,:) = [];
                 
-                for q = 1:size(labelAtery,1)
-                    if isempty(labelAtery{q,4}) || labelAtery{q,4} == 0
-                        labelAtery{q,3} = ['A' num2str(q)];
+                for q = 1:size(labelArtery,1)
+                    if isempty(labelArtery{q,4}) || labelArtery{q,4} == 0
+                        labelArtery{q,3} = ['A' num2str(q)];
                     end
                 end
             end
             
             
             % clear previous selections
-            prevIdxAtery = [];
-            selectIdxAtery = [];
+            prevIdxArtery = [];
+            selectIdxArtery = [];
             
         else
             if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
@@ -511,11 +512,11 @@ redraw();
 
     function onClear(~,~)
         % reset everything
-        prevIdxAtery = [];
-        selectIdxAtery = [];
-        ptsAtery = zeros(0,2);
-        adjAtery = sparse([]);
-        labelAtery = cell(0,3);      % label 엣지 정보 제거 추가
+        prevIdxArtery = [];
+        selectIdxArtery = [];
+        ptsArtery = zeros(0,2);
+        adjArtery = sparse([]);
+        labelArtery = cell(0,3);      % label 엣지 정보 제거 추가
         
         prevIdxVein = [];
         selectIdxVein = [];
@@ -534,7 +535,7 @@ redraw();
 
     function onExport(~,~)
         fname = datestr(now,'yymmddHHMMSS');
-        uisave({'ptsAtery', 'adjAtery', 'labelAtery', 'ptsVein', 'adjVein', 'labelVein'}, ['VG_' fname]);
+        uisave({'ptsArtery', 'adjArtery', 'labelArtery', 'ptsVein', 'adjVein', 'labelVein'}, ['VG_' fname]);
     end
 
     function onImport(~,~)
@@ -543,9 +544,9 @@ redraw();
             onClear();
             finput = load([fpath '\' fname]);
 
-            ptsAtery = finput.ptsAtery;
-            adjAtery = finput.adjAtery;
-            labelAtery = finput.labelAtery;
+            ptsArtery = finput.ptsArtery;
+            adjArtery = finput.adjArtery;
+            labelArtery = finput.labelArtery;
 
             ptsVein = finput.ptsVein;
             adjVein = finput.adjVein;
@@ -558,14 +559,14 @@ redraw();
 
     function onSelect(~,~)
         % update index of currently selected node
-        prevIdxAtery = [];
+        prevIdxArtery = [];
         prevIdxVein = [];
         
         % 리스트 박스가 비었을 때 (초기 생성, 삭제하다가 모든 아이템 삭제) Value 값 조절
         if ~isempty(get(h.list, 'String'))
             if vesselState
-                selectIdxAtery = get(h.list, 'Value');
-                set(h.labelEdit, 'String', labelAtery{selectIdxAtery, 3})
+                selectIdxArtery = get(h.list, 'Value');
+                set(h.labelEdit, 'String', labelArtery{selectIdxArtery, 3})
             else
                 selectIdxVein = get(h.list, 'Value');
                 set(h.labelEdit, 'String', labelVein{selectIdxVein, 3})
@@ -590,12 +591,12 @@ redraw();
     end
 
     function onLabelEdit(idx)
-        prevIdxAtery = [];
+        prevIdxArtery = [];
         prevIdxVein = [];
         
         if vesselState
-            selectIdxAtery = idx;
-            set(h.labelEdit, 'String', labelAtery{selectIdxAtery, 3})
+            selectIdxArtery = idx;
+            set(h.labelEdit, 'String', labelArtery{selectIdxArtery, 3})
         else
             selectIdxVein = idx;
             set(h.labelEdit, 'String', labelVein{selectIdxVein, 3})
@@ -613,14 +614,14 @@ redraw();
         if strcmp(set(h.labelEdit, 'Enable'), 'off'), return; end
         
         if vesselState
-            labelAtery{selectIdxAtery,3} = get(h.labelEdit, 'String');
-            labelAtery{selectIdxAtery,4} = 1;
+            labelArtery{selectIdxArtery,3} = get(h.labelEdit, 'String');
+            labelArtery{selectIdxArtery,4} = 1;
         else
             labelVein{selectIdxVein,3} = get(h.labelEdit, 'String');
             labelVein{selectIdxVein,4} = 1;
         end
         
-        selectIdxAtery = [];
+        selectIdxArtery = [];
         selectIdxVein = [];
         set(h.labelEdit, 'String', '')
         set(h.labelEdit, 'Enable', 'off')
@@ -637,7 +638,7 @@ redraw();
             uicontrol(h.labelSet);
             onLabelSet();
         elseif isequal(key,char(27))
-            selectIdxAtery = [];
+            selectIdxArtery = [];
             selectIdxVein = [];
             uicontrol(h.labelSet);
             setCategory();
@@ -651,7 +652,7 @@ redraw();
         if isequal(key,char(13))
             onLabelSet();
         elseif isequal(key,char(27))
-            selectIdxAtery = [];
+            selectIdxArtery = [];
             selectIdxVein = [];
             setCategory();
         end
@@ -660,22 +661,22 @@ redraw();
     function redraw()
         % 선분 그리기 단계
         % 동맥
-        p = nan(3*nnz(adjAtery),2);
-        for q = 1:size(labelAtery,1)
-            p(1+3*(q-1),:) = ptsAtery(labelAtery{q,1},:);
-            p(2+3*(q-1),:) = ptsAtery(labelAtery{q,2},:);
+        p = nan(3*nnz(adjArtery),2);
+        for q = 1:size(labelArtery,1)
+            p(1+3*(q-1),:) = ptsArtery(labelArtery{q,1},:);
+            p(2+3*(q-1),:) = ptsArtery(labelArtery{q,2},:);
         end
-        set(h.edgesAtery, 'XData',p(:,1), 'YData',p(:,2))
-        if ishghandle(h.vesselsAtery), delete(h.vesselsAtery); end
-        h.vesselsAtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
-            strcat(labelAtery(:,3)), ...  % label(:)
+        set(h.edgesArtery, 'XData',p(:,1), 'YData',p(:,2))
+        if ishghandle(h.vesselsArtery), delete(h.vesselsArtery); end
+        h.vesselsArtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
+            strcat(labelArtery(:,3)), ...  % label(:)
             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
             'VerticalAlign','bottom', 'HorizontalAlign','left');
-        if ~isempty(selectIdxAtery)
-            set(h.vesselsAtery(selectIdxAtery), 'Color', 'g')
+        if ~isempty(selectIdxArtery)
+            set(h.vesselsArtery(selectIdxArtery), 'Color', 'g')
             if ishghandle(h.selectArtery), delete(h.selectArtery); end
-            h.selectArtery = line(p((selectIdxAtery-1)*3+1:(selectIdxAtery-1)*3+2,1), ...
-                p((selectIdxAtery-1)*3+1:(selectIdxAtery-1)*3+2,2), ...,
+            h.selectArtery = line(p((selectIdxArtery-1)*3+1:(selectIdxArtery-1)*3+2,1), ...
+                p((selectIdxArtery-1)*3+1:(selectIdxArtery-1)*3+2,2), ...,
                 'Parent',h.ax, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         % 정맥
@@ -700,8 +701,8 @@ redraw();
         
         % 점 그리기 단계
         % 동맥
-        set(h.ptsAtery, 'XData', ptsAtery(:,1), 'YData',ptsAtery(:,2))
-        set(h.prevAtery, 'XData', ptsAtery(prevIdxAtery,1), 'YData',ptsAtery(prevIdxAtery,2))
+        set(h.ptsArtery, 'XData', ptsArtery(:,1), 'YData',ptsArtery(:,2))
+        set(h.prevArtery, 'XData', ptsArtery(prevIdxArtery,1), 'YData',ptsArtery(prevIdxArtery,2))
         
         % 정맥
         set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
@@ -709,9 +710,9 @@ redraw();
         
         % 혈관 이름 (선분) 목록 출력
         if vesselState
-            if size(labelAtery,1) == 1, set(h.list, 'Value', 1); end
+            if size(labelArtery,1) == 1, set(h.list, 'Value', 1); end
             % 동맥 이름 출력
-            set(h.list, 'String', strcat(num2str((1:size(labelAtery,1))'), ': ', labelAtery(:,3)))
+            set(h.list, 'String', strcat(num2str((1:size(labelArtery,1))'), ': ', labelArtery(:,3)))
         else
             if size(labelVein,1) == 1, set(h.list, 'Value', 1); end
             % 정맥 이름 출력
@@ -720,11 +721,11 @@ redraw();
         
         % 꼭지점 이름 출력
         % 동맥
-        if ishghandle(h.verticesAtery), delete(h.verticesAtery); end
+        if ishghandle(h.verticesArtery), delete(h.verticesArtery); end
         if showVertices
             set(h.menu, 'Checked','on')
-            h.verticesAtery = text(ptsAtery(:,1)+2.5, ptsAtery(:,2)+2.5, ...
-                strcat('a', num2str((1:size(ptsAtery,1))')), ...
+            h.verticesArtery = text(ptsArtery(:,1)+2.5, ptsArtery(:,2)+2.5, ...
+                strcat('a', num2str((1:size(ptsArtery,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
                 'VerticalAlign','bottom', 'HorizontalAlign','left');
         else
@@ -763,10 +764,10 @@ redraw();
             vesselState3D = 1;
             prevIdxVein3D = [];
             selectIdxVein3D = [];
-        else    %h.rV.Value == 1
+        else    %h.rV3D.Value == 1
             vesselState3D = 0;
-            prevIdxAtery3D = [];
-            selectIdxAtery3D = [];
+            prevIdxArtery3D = [];
+            selectIdxArtery3D = [];
         end
         
         set(h.labelEdit3D, 'String', '')
@@ -824,7 +825,7 @@ redraw();
         if ~isfield(h, 'p3DHArtery') || ~isfield(h, 'p3DHVein'), return, end
         if isempty(h.p3DHArtery) || isempty(h.p3DHVein), return, end
 
-        if strcmp(get(h.p3DHArtery, 'Visible'), 'on')
+        if strcmp(get(h.p3DHArtery, 'Visible'), 'on') || strcmp(get(h.p3DHVein, 'Visible'), 'on')
             set(h.ax3D, 'XLimMode', 'manual', 'YLimMode', 'manual', 'ZLimMode', 'manual')
             set(h.p3DHArtery, 'Visible', 'off');
             set(h.p3DHVein, 'Visible', 'off');
@@ -836,6 +837,8 @@ redraw();
     end
 
     function onCursor3D(~,~)
+        if ~isfield(h, 'p3DHArtery') && ~isfield(h, 'p3DHVein'), return, end
+        
         dcm = datacursormode(h.fig);
         set(dcm,'UpdateFcn',@dataText)
 
@@ -844,132 +847,266 @@ redraw();
         else
             set(dcm, 'enable', 'on');
             set(dcm, 'SnapToDataVertex','off');
-            set(h.p3DHArtery, 'HitTest','on');
-            set(h.p3DHVein, 'HitTest','on');
+            
+            if vesselState3D && isfield(h, 'p3DHArtery') && ~isempty(h.p3DHArtery)
+                set(h.p3DHArtery, 'HitTest','on');
+                if isfield(h, 'p3DHVein')
+                    set(h.p3DHVein, 'HitTest','off');
+                end
+            end
+            
+            if ~vesselState3D && isfield(h, 'p3DHVein') &&~isempty(h.p3DHVein)
+                set(h.p3DHVein, 'HitTest','on');
+                if isfield(h, 'p3DHArtery')
+                    set(h.p3DHArtery, 'HitTest','off');
+                end
+            end
         end
     end
 
     function onSetVertices(~,~)
         dcm = datacursormode(h.fig);
         data3 = getCursorInfo(dcm);
-        if isempty(ptsAtery3D)
-            ptsAtery3D = zeros(0,3);
-            adjAtery3D = sparse([]);
-            for n = 1:size(data3,2);
-                ptsAtery3D(n,:) = data3(n).Position;
-                adjAtery3D(n,n) = 0;
+        
+        if vesselState3D
+            if isempty(ptsArtery3D)
+                ptsArtery3D = zeros(0,3);
+                adjArtery3D = sparse([]);
+                for n = 1:size(data3,2);
+                    ptsArtery3D(n,:) = data3(n).Position;
+                    adjArtery3D(n,n) = 0;
+                end
+            else
+                listN = size(ptsArtery3D,1);
+                for n = 1:size(data3,2);
+                    ptsArtery3D(listN+n,:) = data3(n).Position;
+                    adjArtery3D(listN+n,listN+n) = 0;
+                end
             end
+            
         else
-            listN = size(ptsAtery3D,1);
-            for n = 1:size(data3,2);
-                ptsAtery3D(listN+n,:) = data3(n).Position;
-                adjAtery3D(listN+n,listN+n) = 0;
+            if isempty(ptsVein3D)
+                ptsVein3D = zeros(0,3);
+                adjVein3D = sparse([]);
+                for n = 1:size(data3,2);
+                    ptsVein3D(n,:) = data3(n).Position;
+                    adjVein3D(n,n) = 0;
+                end
+            else
+                listN = size(ptsVein3D,1);
+                for n = 1:size(data3,2);
+                    ptsVein3D(listN+n,:) = data3(n).Position;
+                    adjVein3D(listN+n,listN+n) = 0;
+                end
             end
         end
         
-        set(h.p3DHArtery, 'HitTest','off');
-        set(h.p3DHVein, 'HitTest','off');
+        if isfield(h, 'p3DHArtery'), set(h.p3DHArtery, 'HitTest','off'); end
+        if isfield(h, 'p3DHVein'), set(h.p3DHVein, 'HitTest','off'); end
         redraw3D();
     end
 
     function redraw3D()
         % 선분 그리기 단계
         % 동맥
-        p = nan(3*nnz(adjAtery3D),3);
-        for q = 1:size(labelAtery3D,1)
-            p(1+3*(q-1),:) = ptsAtery3D(labelAtery3D{q,1},:);
-            p(2+3*(q-1),:) = ptsAtery3D(labelAtery3D{q,2},:);
+        p = nan(3*nnz(adjArtery3D),3);
+        for q = 1:size(labelArtery3D,1)
+            p(1+3*(q-1),:) = ptsArtery3D(labelArtery3D{q,1},:);
+            p(2+3*(q-1),:) = ptsArtery3D(labelArtery3D{q,2},:);
         end
-        set(h.edgesAtery3D, 'XData',p(:,1), 'YData',p(:,2), 'ZData',p(:,3))
-        if ishghandle(h.vesselsAtery3D), delete(h.vesselsAtery3D); end
-        h.vesselsAtery3D = text((p(1:3:end,1)+p(2:3:end,1))/2, (p(1:3:end,2)+p(2:3:end,2))/2, (p(1:3:end,3)+p(2:3:end,3))/2, ...
-            strcat(labelAtery3D(:,3)), ...  % label(:)
+        set(h.edgesArtery3D, 'XData',p(:,1), 'YData',p(:,2), 'ZData',p(:,3))
+        if ishghandle(h.vesselsArtery3D), delete(h.vesselsArtery3D); end
+        h.vesselsArtery3D = text((p(1:3:end,1)+p(2:3:end,1))/2, (p(1:3:end,2)+p(2:3:end,2))/2, (p(1:3:end,3)+p(2:3:end,3))/2, ...
+            strcat(labelArtery3D(:,3)), ...  % label(:)
             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
             'VerticalAlign','bottom', 'HorizontalAlign','left');
-        if ~isempty(selectIdxAtery3D)
-            set(h.vesselsAtery3D(selectIdxAtery3D), 'Color', 'g')
+        if ~isempty(selectIdxArtery3D)
+            set(h.vesselsArtery3D(selectIdxArtery3D), 'Color', 'g')
             if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
-            h.selectArtery3D = line(p((selectIdxAtery3D-1)*3+1:(selectIdxAtery3D-1)*3+2,1), ...
-                p((selectIdxAtery3D-1)*3+1:(selectIdxAtery3D-1)*3+2,2), ...,
-                p((selectIdxAtery3D-1)*3+1:(selectIdxAtery3D-1)*3+2,3), ...,
+            h.selectArtery3D = line(p((selectIdxArtery3D-1)*3+1:(selectIdxArtery3D-1)*3+2,1), ...
+                p((selectIdxArtery3D-1)*3+1:(selectIdxArtery3D-1)*3+2,2), ...,
+                p((selectIdxArtery3D-1)*3+1:(selectIdxArtery3D-1)*3+2,3), ...,
                 'Parent',h.ax3D, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
+        % 정맥
+        p = nan(3*nnz(adjVein3D),3);
+        for q = 1:size(labelVein3D,1)
+            p(1+3*(q-1),:) = ptsVein3D(labelVein3D{q,1},:);
+            p(2+3*(q-1),:) = ptsVein3D(labelVein3D{q,2},:);
+        end
+        set(h.edgesVein3D, 'XData',p(:,1), 'YData',p(:,2), 'ZData',p(:,3))
+        if ishghandle(h.vesselsVein3D), delete(h.vesselsVein3D); end
+        h.vesselsVein3D = text((p(1:3:end,1)+p(2:3:end,1))/2, (p(1:3:end,2)+p(2:3:end,2))/2, (p(1:3:end,3)+p(2:3:end,3))/2, ...
+            strcat(labelVein3D(:,3)), ...  % label(:)
+            'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
+            'VerticalAlign','bottom', 'HorizontalAlign','left');
+        if ~isempty(selectIdxVein3D)
+            set(h.vesselsVein3D(selectIdxVein3D), 'Color', 'g')
+            if ishghandle(h.selectVein3D), delete(h.selectVein3D); end
+            h.selectVein3D = line(p((selectIdxVein3D-1)*3+1:(selectIdxVein3D-1)*3+2,1), ...
+                p((selectIdxVein3D-1)*3+1:(selectIdxVein3D-1)*3+2,2), ...,
+                p((selectIdxVein3D-1)*3+1:(selectIdxVein3D-1)*3+2,3), ...,
+                'Parent',h.ax3D, 'HitTest','off', 'LineWidth',2, 'Color','g');
+        end
+        
 
         % 점 그리기 단계
         % 동맥
-        set(h.ptsAtery3D, 'XData', ptsAtery3D(:,1), 'YData', ptsAtery3D(:,2), 'ZData',ptsAtery3D(:,3))
-        set(h.prevAtery3D, 'XData', ptsAtery3D(prevIdxAtery3D,1), 'YData',ptsAtery3D(prevIdxAtery3D,2), 'ZData',ptsAtery3D(prevIdxAtery3D,3))
+        set(h.ptsArtery3D, 'XData', ptsArtery3D(:,1), 'YData', ptsArtery3D(:,2), 'ZData',ptsArtery3D(:,3))
+        set(h.prevArtery3D, 'XData', ptsArtery3D(prevIdxArtery3D,1), 'YData',ptsArtery3D(prevIdxArtery3D,2), 'ZData',ptsArtery3D(prevIdxArtery3D,3))
         
         % 정맥
-%        set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
-%        set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
+        set(h.ptsVein3D, 'XData', ptsVein3D(:,1), 'YData', ptsVein3D(:,2), 'ZData',ptsVein3D(:,3))
+        set(h.prevVein3D, 'XData', ptsVein3D(prevIdxVein3D,1), 'YData',ptsVein3D(prevIdxVein3D,2), 'ZData',ptsVein3D(prevIdxVein3D,3))
 
-        if vesselState
-            if size(labelAtery3D,1) == 1, set(h.list3D, 'Value', 1); end
+        if vesselState3D
+            if size(labelArtery3D,1) == 1, set(h.list3D, 'Value', 1); end
             % 동맥 이름 출력
-            set(h.list3D, 'String', strcat(num2str((1:size(labelAtery3D,1))'), ': ', labelAtery3D(:,3)))
+            set(h.list3D, 'String', strcat(num2str((1:size(labelArtery3D,1))'), ': ', labelArtery3D(:,3)))
         else
-%             if size(labelVein,1) == 1, set(h.list, 'Value', 1); end
-%             % 정맥 이름 출력
-%             set(h.list, 'String', strcat(num2str((1:size(labelVein,1))'), ': ', labelVein(:,3)))
+            if size(labelVein3D,1) == 1, set(h.list3D, 'Value', 1); end
+            % 정맥 이름 출력
+            set(h.list3D, 'String', strcat(num2str((1:size(labelVein3D,1))'), ': ', labelVein3D(:,3)))
+
         end
 
+        % 꼭지점 이름 출력
+        % 동맥
+        if ishghandle(h.verticesArtery3D), delete(h.verticesArtery3D); end
+        if showVertices3D
+            set(h.menu3D, 'Checked','on')
+            h.verticesArtery3D = text(ptsArtery3D(:,1)+2.5, ptsArtery3D(:,2)+2.5,  ptsArtery3D(:,3)+2.5,...
+                strcat('a', num2str((1:size(ptsArtery3D,1))')), ...
+                'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
+                'VerticalAlign','bottom', 'HorizontalAlign','left');
+        else
+            set(h.menu3D, 'Checked','off')
+        end
+        % 정맥
+        if ishghandle(h.verticesVein3D), delete(h.verticesVein3D); end
+        if showVertices3D
+            set(h.menu3D, 'Checked','on')
+            h.verticesVein3D = text(ptsVein3D(:,1)+2.5, ptsVein3D(:,2)+2.5,  ptsVein3D(:,3)+2.5,...
+                strcat('v', num2str((1:size(ptsVein3D,1))')), ...
+                'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
+                'VerticalAlign','bottom', 'HorizontalAlign','left');
+        else
+            set(h.menu3D, 'Checked','off')
+        end
         
         % force refresh
         drawnow
     end
 
     function onClearModel3D(~,~)
-        delete(h.p3DHArtery);
-        delete(h.p3DHVein);
+        if ishghandle(h.p3DHArtery), delete(h.p3DHArtery); end
+        if ishghandle(h.p3DHVein), delete(h.p3DHVein); end
     end
 
     function onDeleteGraph3D(~,~)
-        if ~isempty(prevIdxAtery3D)
-            idx = prevIdxAtery3D;
+        % check that list of nodes is not empty
+        if isempty(ptsArtery3D) && isempty(ptsVein3D), return; end
+        
+        % delete selected node
+        if vesselState3D
+            if ~isempty(prevIdxArtery3D)
+                idx = prevIdxArtery3D;
 
-            % 꼭지점 삭제 단계
-            ptsAtery3D(idx,:) = [];
+                % 꼭지점 삭제 단계
+                ptsArtery3D(idx,:) = [];
 
-            % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
-            adjAtery3D(:,idx) = [];
-            adjAtery3D(idx,:) = [];
+                % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
+                adjArtery3D(:,idx) = [];
+                adjArtery3D(idx,:) = [];
 
-            rowList = [];
-            for q = 1:size(labelAtery3D,1)
-                if labelAtery3D{q,1} == idx || labelAtery3D{q,2} == idx
-                    rowList = [rowList q];
+                rowList = [];
+                for q = 1:size(labelArtery3D,1)
+                    if labelArtery3D{q,1} == idx || labelArtery3D{q,2} == idx
+                        rowList = [rowList q];
+                    end
+                end
+                labelArtery3D(rowList,:) = [];
+                for q = 1:size(labelArtery3D,1)
+                    if labelArtery3D{q,1} > idx
+                        labelArtery3D{q,1} = labelArtery3D{q,1}-1;
+                    end
+
+                    if labelArtery3D{q,2} > idx
+                        labelArtery3D{q,2} = labelArtery3D{q,2}-1;
+                    end
+
+                    if isempty(labelArtery3D{q,4}) || labelArtery3D{q,4} == 0
+                        labelArtery3D{q,3} = ['A' num2str(q)];
+                    end
+                end
+
+            else
+                 % 선분 지울 때
+                if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
+                
+                idx = get(h.list3D, 'Value');    
+                adjArtery3D(labelArtery3D{idx,1}, labelArtery3D{idx,2}) = 0;
+                labelArtery3D(idx,:) = [];
+
+                for q = 1:size(labelArtery3D,1)
+                    if isempty(labelArtery3D{q,4}) || labelArtery3D{q,4} == 0
+                        labelArtery3D{q,3} = ['A' num2str(q)];
+                    end
                 end
             end
-            labelAtery3D(rowList,:) = [];
-            for q = 1:size(labelAtery3D,1)
-                if labelAtery3D{q,1} > idx
-                    labelAtery3D{q,1} = labelAtery3D{q,1}-1;
-                end
-
-                if labelAtery3D{q,2} > idx
-                    labelAtery3D{q,2} = labelAtery3D{q,2}-1;
-                end
-
-                if isempty(labelAtery3D{q,4}) || labelAtery3D{q,4} == 0
-                    labelAtery3D{q,3} = ['A' num2str(q)];
-                end
-            end
-
+            
         else
-            idx = get(h.list3D, 'Value');     % 선분 지울 때
-            adjAtery3D(labelAtery3D{idx,1}, labelAtery3D{idx,2}) = 0;
-            labelAtery3D(idx,:) = [];
+            if ~isempty(prevIdxVein3D)
+                idx = prevIdxVein3D;
 
-            for q = 1:size(labelAtery3D,1)
-                if isempty(labelAtery3D{q,4}) || labelAtery3D{q,4} == 0
-                    labelAtery3D{q,3} = ['A' num2str(q)];
+                % 꼭지점 삭제 단계
+                ptsVein3D(idx,:) = [];
+
+                % 선분 삭제 단계 (꼭지점과 연결된 선분 대상)
+                adjVein3D(:,idx) = [];
+                adjVein3D(idx,:) = [];
+
+                rowList = [];
+                for q = 1:size(labelVein3D,1)
+                    if labelVein3D{q,1} == idx || labelVein3D{q,2} == idx
+                        rowList = [rowList q];
+                    end
+                end
+                labelVein3D(rowList,:) = [];
+                for q = 1:size(labelVein3D,1)
+                    if labelVein3D{q,1} > idx
+                        labelVein3D{q,1} = labelVein3D{q,1}-1;
+                    end
+
+                    if labelVein3D{q,2} > idx
+                        labelVein3D{q,2} = labelVein3D{q,2}-1;
+                    end
+
+                    if isempty(labelVein3D{q,4}) || labelVein3D{q,4} == 0
+                        labelVein3D{q,3} = ['V' num2str(q)];
+                    end
+                end
+
+            else
+                % 선분 지울 때
+                if ishghandle(h.selectVein3D), delete(h.selectVein3D); end
+                
+                idx = get(h.list3D, 'Value');
+                adjVein3D(labelVein3D{idx,1}, labelVein3D{idx,2}) = 0;
+                labelVein3D(idx,:) = [];
+
+                for q = 1:size(labelVein3D,1)
+                    if isempty(labelVein3D{q,4}) || labelVein3D{q,4} == 0
+                        labelVein3D{q,3} = ['V' num2str(q)];
+                    end
                 end
             end
         end
         
-        prevIdxAtery3D = [];
-        selectIdxAtery3D = [];
+        prevIdxArtery3D = [];
+        selectIdxArtery3D = [];
+        prevIdxVein3D = [];
+        selectIdxVein3D = [];
         
         if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
             set(h.labelEdit3D, 'String', '')
@@ -988,11 +1125,11 @@ redraw();
 
     function onClearGraph3D(~,~)
         % reset everything
-        prevIdxAtery3D = [];
-        selectIdxAtery3D = [];
-        ptsAtery3D = zeros(0,3);
-        adjAtery3D = sparse([]);
-        labelAtery3D = cell(0,3);      % label 엣지 정보 제거 추가
+        prevIdxArtery3D = [];
+        selectIdxArtery3D = [];
+        ptsArtery3D = zeros(0,3);
+        adjArtery3D = sparse([]);
+        labelArtery3D = cell(0,3);      % label 엣지 정보 제거 추가
 
         prevIdxVein3D = [];
         selectIdxVein3D = [];
@@ -1009,8 +1146,8 @@ redraw();
         redraw3D()
     end
 
-function onMouseDown3D(~,~)
-            % get location of mouse click (in data coordinates)
+    function onMouseDown3D(~,~)
+        % get location of mouse click (in data coordinates)
         if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
             set(h.labelEdit3D, 'String', '')
             set(h.labelEdit3D, 'Enable', 'off')
@@ -1019,102 +1156,130 @@ function onMouseDown3D(~,~)
         if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
         if ishghandle(h.selectVein3D), delete(h.selectVein3D); end
         
-        if vesselState == 1
-            % 동맥 처리 (Atery)
+        if vesselState3D == 1
+            % 동맥 처리 (Artery)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % left click
                 return
             elseif strcmpi(get(h.fig,'SelectionType'), 'alt') || ...
                     strcmpi(get(h.fig,'SelectionType'), 'open')
                 % right click (ctrl+left click) / duouble click
-                pointCloud = ptsAtery3D';
+                pointCloud = ptsArtery3D';
                 point = get(h.ax3D, 'CurrentPoint');
                 camPos = get(h.ax3D, 'CameraPosition'); % camera position
                 camTgt = get(h.ax3D, 'CameraTarget'); % where the camera is pointing to
-%                disp(point)
                 
                 camDir = camPos - camTgt; % camera direction
                 camUpVect = get(gca, 'CameraUpVector'); % camera 'up' vector
-
-                % build an orthonormal frame based on the viewing direction and the 
+                
+                % build an orthonormal frame based on the viewing direction and the
                 % up vector (the "view frame")
-                zAxis = camDir/norm(camDir);    
-                upAxis = camUpVect/norm(camUpVect); 
+                zAxis = camDir/norm(camDir);
+                upAxis = camUpVect/norm(camUpVect);
                 xAxis = cross(upAxis, zAxis);
                 yAxis = cross(zAxis, xAxis);
-
-                rot = [xAxis; yAxis; zAxis]; % view rotation 
-
+                
+                rot = [xAxis; yAxis; zAxis]; % view rotation
+                
                 % the point cloud represented in the view frame
-                rotatedPointCloud = rot * pointCloud; 
-
+                rotatedPointCloud = rot * pointCloud;
+                
                 % the clicked point represented in the view frame
                 rotatedPointFront = rot * point' ;
-
-                % find the nearest neighbour to the clicked point 
-                pointCloudIndex = dsearchn(rotatedPointCloud(1:2,:)', ... 
-                rotatedPointFront(1:2));
-
-                if isempty(prevIdxAtery3D)
+                
+                % find the nearest neighbour to the clicked point
+                pointCloudIndex = dsearchn(rotatedPointCloud(1:2,:)', ...
+                    rotatedPointFront(1:2));
+                
+                if isempty(prevIdxArtery3D)
                     % starting node (requires a second click to finish)
-                    prevIdxAtery3D = pointCloudIndex;
+                    prevIdxArtery3D = pointCloudIndex;
                     set(h.deleteGraph3D, 'Enable', 'on')
                 else
                     idx = pointCloudIndex;
-                    if adjAtery3D(prevIdxAtery3D,idx) ~= 1 && adjAtery3D(idx,prevIdxAtery3D) ~= 1
-                        adjAtery3D(prevIdxAtery3D,idx) = 1;
-                        m = size(labelAtery3D,1);
-                        labelAtery3D{m+1,1} = prevIdxAtery3D;
-                        labelAtery3D{m+1,2} = idx;
-                        labelAtery3D{m+1,3} = strcat('A', num2str(m+1));
+                    if adjArtery3D(prevIdxArtery3D,idx) ~= 1 && adjArtery3D(idx,prevIdxArtery3D) ~= 1
+                        adjArtery3D(prevIdxArtery3D,idx) = 1;
+                        m = size(labelArtery3D,1);
+                        labelArtery3D{m+1,1} = prevIdxArtery3D;
+                        labelArtery3D{m+1,2} = idx;
+                        labelArtery3D{m+1,3} = strcat('A', num2str(m+1));
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
-                    prevIdxAtery3D = [];
+                    prevIdxArtery3D = [];
                     set(h.deleteGraph3D, 'Enable', 'off')
                 end
                 
-%                fprintf('you clicked on point number %d\n', pointCloudIndex);
-
-%                 % hit test (find node closest to click location: euclidean distnce)
-%                 [dst,idx] = min(sum(bsxfun(@minus, ptsAtery, p(1,1:2)).^2,2));
-%                 if sqrt(dst) > 8, return; end
-%                 set(h.delete, 'Enable', 'on')
-%                 
-%                 if isempty(prevIdxAtery)
-%                     % starting node (requires a second click to finish)
-%                     prevIdxAtery = idx;
-%                 else
-%                     % add the new edge % 선분 생성 단계
-%                     if adjAtery(prevIdxAtery,idx) ~= 1 && adjAtery(idx,prevIdxAtery) ~= 1
-%                         adjAtery(prevIdxAtery,idx) = 1;
-%                         m = size(labelAtery,1);
-%                         labelAtery{m+1,1} = prevIdxAtery;
-%                         labelAtery{m+1,2} = idx;
-%                         labelAtery{m+1,3} = strcat('A', num2str(m+1));
-%                     else
-%                         % warndlg('두 점은 이미 연결되었습니다.','거절')
-%                     end
-%                     prevIdxAtery = [];
-%                     set(h.delete, 'Enable', 'off')
-%                 end
-%                 
-%                 selectIdxAtery = [];
-%                 selectIdxVein = [];
             end
-         else
-%             % 정맥 처리 (Vein)
+            
+        else
+            % 정맥 처리 (Vein)
+            if strcmpi(get(h.fig,'SelectionType'), 'Normal')
+                % left click
+                return
+            elseif strcmpi(get(h.fig,'SelectionType'), 'alt') || ...
+                    strcmpi(get(h.fig,'SelectionType'), 'open')
+                % right click (ctrl+left click) / duouble click
+                pointCloud = ptsVein3D';
+                point = get(h.ax3D, 'CurrentPoint');
+                camPos = get(h.ax3D, 'CameraPosition'); % camera position
+                camTgt = get(h.ax3D, 'CameraTarget'); % where the camera is pointing to
+                
+                camDir = camPos - camTgt; % camera direction
+                camUpVect = get(gca, 'CameraUpVector'); % camera 'up' vector
+                
+                % build an orthonormal frame based on the viewing direction and the
+                % up vector (the "view frame")
+                zAxis = camDir/norm(camDir);
+                upAxis = camUpVect/norm(camUpVect);
+                xAxis = cross(upAxis, zAxis);
+                yAxis = cross(zAxis, xAxis);
+                
+                rot = [xAxis; yAxis; zAxis]; % view rotation
+                
+                % the point cloud represented in the view frame
+                rotatedPointCloud = rot * pointCloud;
+                
+                % the clicked point represented in the view frame
+                rotatedPointFront = rot * point' ;
+                
+                % find the nearest neighbour to the clicked point
+                pointCloudIndex = dsearchn(rotatedPointCloud(1:2,:)', ...
+                    rotatedPointFront(1:2));
+                
+                if isempty(prevIdxVein3D)
+                    % starting node (requires a second click to finish)
+                    prevIdxVein3D = pointCloudIndex;
+                    set(h.deleteGraph3D, 'Enable', 'on')
+                else
+                    idx = pointCloudIndex;
+                    if adjVein3D(prevIdxVein3D,idx) ~= 1 && adjVein3D(idx,prevIdxVein3D) ~= 1
+                        adjVein3D(prevIdxVein3D,idx) = 1;
+                        m = size(labelVein3D,1);
+                        labelVein3D{m+1,1} = prevIdxVein3D;
+                        labelVein3D{m+1,2} = idx;
+                        labelVein3D{m+1,3} = strcat('V', num2str(m+1));
+                    else
+                        % warndlg('두 점은 이미 연결되었습니다.','거절')
+                    end
+                    prevIdxVein3D = [];
+                    set(h.deleteGraph3D, 'Enable', 'off')
+                end
+            end
         end
         
-         % update GUI
-         redraw3D()
+        selectIdxArtery3D = [];
+        selectIdxVein3D = [];
+
+        % update GUI
+        redraw3D()
     end
 
     function onExportGraph3D(~,~)
         ax3DLimit = [get(h.ax3D, 'XLim');get(h.ax3D, 'YLim');get(h.ax3D, 'ZLim')];
         ax3DView = get(h.ax3D, 'View');
         fname = datestr(now,'yymmddHHMMSS');
-        uisave({'ptsAtery3D', 'adjAtery3D', 'labelAtery3D', 'ptsVein3D', 'adjVein3D', 'labelVein3D', 'ax3DLimit', 'ax3DView'}, ['VG_3D_' fname]);
+        uisave({'ptsArtery3D', 'adjArtery3D', 'labelArtery3D', 'ptsVein3D', 'adjVein3D', 'labelVein3D', 'ax3DLimit', 'ax3DView'}, ['VG_3D_' fname]);
     end
 
     function onImportGraph3D(~,~)
@@ -1131,9 +1296,9 @@ function onMouseDown3D(~,~)
             ax3DView = finput.ax3DView;
             set(h.ax3D, 'View', ax3DView);
             
-            ptsAtery3D = finput.ptsAtery3D;
-            adjAtery3D = finput.adjAtery3D;
-            labelAtery3D = finput.labelAtery3D;
+            ptsArtery3D = finput.ptsArtery3D;
+            adjArtery3D = finput.adjArtery3D;
+            labelArtery3D = finput.labelArtery3D;
 
             ptsVein3D = finput.ptsVein3D;
             adjVein3D = finput.adjVein3D;
@@ -1150,14 +1315,14 @@ function onMouseDown3D(~,~)
 
     function onSelect3D(~,~)
         % update index of currently selected node
-        prevIdxAtery3D = [];
+        prevIdxArtery3D = [];
         prevIdxVein3D = [];
         
         % 리스트 박스가 비었을 때 (초기 생성, 삭제하다가 모든 아이템 삭제) Value 값 조절
         if ~isempty(get(h.list3D, 'String'))
-            if vesselState
-                selectIdxAtery3D = get(h.list3D, 'Value');
-                set(h.labelEdit3D, 'String', labelAtery3D{selectIdxAtery3D, 3})
+            if vesselState3D
+                selectIdxArtery3D = get(h.list3D, 'Value');
+                set(h.labelEdit3D, 'String', labelArtery3D{selectIdxArtery3D, 3})
             else
                 selectIdxVein3D = get(h.list3D, 'Value');
                 set(h.labelEdit3D, 'String', labelVein3D{selectIdxVein3D, 3})
@@ -1175,18 +1340,24 @@ function onMouseDown3D(~,~)
         redraw3D()
     end
 
+    function onCMenu3D(~,~)
+        % flip state
+        showVertices3D = ~showVertices3D;
+        redraw3D()
+    end
+
     function onLabelSet3D(~,~)
         if strcmp(set(h.labelEdit3D, 'Enable'), 'off'), return; end
         
-        if vesselState
-            labelAtery3D{selectIdxAtery3D,3} = get(h.labelEdit3D, 'String');
-            labelAtery3D{selectIdxAtery3D,4} = 1;
+        if vesselState3D
+            labelArtery3D{selectIdxArtery3D,3} = get(h.labelEdit3D, 'String');
+            labelArtery3D{selectIdxArtery3D,4} = 1;
         else
-            labelVein3D{selectIdxVein3D,3} = get(h.labelEdit, 'String');
+            labelVein3D{selectIdxVein3D,3} = get(h.labelEdit3D, 'String');
             labelVein3D{selectIdxVein3D,4} = 1;
         end
         
-        selectIdxAtery3D = [];
+        selectIdxArtery3D = [];
         selectIdxVein3D = [];
         set(h.labelEdit3D, 'String', '')
         set(h.labelEdit3D, 'Enable', 'off')
@@ -1203,10 +1374,10 @@ function onMouseDown3D(~,~)
             uicontrol(h.labelSet3D);
             onLabelSet3D();
         elseif isequal(key,char(27))
-            selectIdxAtery3D = [];
+            selectIdxArtery3D = [];
             selectIdxVein3D = [];
             uicontrol(h.labelSet3D);
-%            setCategory();
+            setCategory3D();
         end
     end
 
