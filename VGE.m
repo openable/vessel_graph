@@ -139,6 +139,7 @@ redraw();
             'Units','pixels', 'Position',[160 20 800 800]);
         view(h.ax3D, 3);
         camlight('headlight');
+        h.edge3D = uipanel('Parent', h.tab2, 'Title', '', 'Units', 'pixels', 'Position', [15 315 140 510]);
         h.rA3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Artery', ...
             'Position',[20 800 60 20],'Value',1,'Callback',@onArtery3D);
         h.rV3D = uicontrol('Style','radiobutton', 'Parent',h.tab2, 'String','Vein', ...
@@ -295,6 +296,7 @@ redraw();
         if strcmp(get(h.labelEdit, 'Enable'), 'on')
             set(h.labelEdit, 'String', '')
             set(h.labelEdit, 'Enable', 'off')
+            set(h.labelSet, 'Enable', 'off')
         end
         
         if ishghandle(h.selectArtery), delete(h.selectArtery); end
@@ -789,6 +791,9 @@ redraw();
         set(h.labelEdit3D, 'String', '')
         set(h.labelEdit3D, 'Enable', 'off')
         set(h.labelSet3D, 'Enable', 'off')
+        set(h.thickEdit3D, 'String', '')
+        set(h.thickEdit3D, 'Enable', 'off')
+        set(h.thickSet3D, 'Enable', 'off')
         set(h.deleteGraph3D, 'Enable', 'off')
         redraw3D()
     end
@@ -1135,10 +1140,13 @@ redraw();
         if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
             set(h.labelEdit3D, 'String', '')
             set(h.labelEdit3D, 'Enable', 'off')
+            set(h.thickEdit3D, 'String', '')
+            set(h.thickEdit3D, 'Enable', 'off')
         end
 
         if strcmp(get(h.labelSet3D, 'Enable'), 'on')
             set(h.labelSet3D, 'Enable', 'off')
+            set(h.thickSet3D, 'Enable', 'off')
         end
 
         % update GUI
@@ -1165,6 +1173,9 @@ redraw();
         set(h.labelEdit3D, 'String', '')
         set(h.labelEdit3D, 'Enable', 'off')
         set(h.labelSet3D, 'Enable', 'off')
+        set(h.thickEdit3D, 'String', '')
+        set(h.thickEdit3D, 'Enable', 'off')
+        set(h.thickSet3D, 'Enable', 'off')
         set(h.deleteGraph3D, 'Enable', 'off')
         set(h.list3D, 'Value', -1)
         redraw3D()
@@ -1175,6 +1186,10 @@ redraw();
         if strcmp(get(h.labelEdit3D, 'Enable'), 'on')
             set(h.labelEdit3D, 'String', '')
             set(h.labelEdit3D, 'Enable', 'off')
+            set(h.labelSet3D, 'Enable', 'off')
+            set(h.thickEdit3D, 'String', '')
+            set(h.thickEdit3D, 'Enable', 'off')
+            set(h.thickSet3D, 'Enable', 'off')
         end
         
         if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
@@ -1184,7 +1199,6 @@ redraw();
             % 悼钙 贸府 (Artery)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % left click
-                return
             elseif strcmpi(get(h.fig,'SelectionType'), 'alt') || ...
                     strcmpi(get(h.fig,'SelectionType'), 'open')
                 % right click (ctrl+left click) / duouble click
@@ -1234,14 +1248,12 @@ redraw();
                     prevIdxArtery3D = [];
                     set(h.deleteGraph3D, 'Enable', 'off')
                 end
-                
             end
             
         else
             % 沥钙 贸府 (Vein)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
                 % left click
-                return
             elseif strcmpi(get(h.fig,'SelectionType'), 'alt') || ...
                     strcmpi(get(h.fig,'SelectionType'), 'open')
                 % right click (ctrl+left click) / duouble click
@@ -1349,14 +1361,20 @@ redraw();
             if vesselState3D
                 selectIdxArtery3D = get(h.list3D, 'Value');
                 set(h.labelEdit3D, 'String', labelArtery3D{selectIdxArtery3D, 3})
+                set(h.thickEdit3D, 'String', labelArtery3D{selectIdxArtery3D, 5})
             else
                 selectIdxVein3D = get(h.list3D, 'Value');
                 set(h.labelEdit3D, 'String', labelVein3D{selectIdxVein3D, 3})
+                set(h.thickEdit3D, 'String', labelVein3D{selectIdxVein3D, 5})
             end
             
             set(h.labelEdit3D, 'Enable', 'on')
             set(h.deleteGraph3D, 'Enable', 'on')
             set(h.labelSet3D, 'Enable', 'on')
+            
+            set(h.thickLabel3D, 'Enable', 'on')
+            set(h.thickEdit3D, 'Enable', 'on')
+            set(h.thickSet3D, 'Enable', 'on')
         else
             set(h.list3D, 'Value', -1)
         end
@@ -1388,6 +1406,9 @@ redraw();
         set(h.labelEdit3D, 'String', '')
         set(h.labelEdit3D, 'Enable', 'off')
         set(h.labelSet3D, 'Enable', 'off')
+        set(h.thickEdit3D, 'String', '')
+        set(h.thickEdit3D, 'Enable', 'off')
+        set(h.thickSet3D, 'Enable', 'off')
         redraw3D()
     end
 
