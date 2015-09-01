@@ -49,7 +49,8 @@ redraw();
     function h = initGUI()
         scr = get(0,'ScreenSize');
         h.fig = figure('Name','Vessel Graph', 'Resize','off', 'Position', ...
-            [((scr(3)-980)/2) ((scr(4)-840)/2) 980 860], 'KeyPressFcn',@onFigKey);
+            [((scr(3)-980)/2) ((scr(4)-840)/2) 980 860], 'KeyPressFcn',@onFigKey, ...
+            'numbertitle', 'off');
         h.tgroup = uitabgroup('Parent', h.fig);
         h.tab1 = uitab('Parent', h.tgroup, 'Title', '2D');
         h.tab2 = uitab('Parent', h.tgroup, 'Title', '3D');
@@ -770,6 +771,12 @@ redraw();
             selectIdxArtery3D = [];
         end
         
+        dcm = datacursormode(h.fig);
+        if strcmp(get(dcm, 'enable'), 'on')
+            dcm.removeAllDataCursors();
+            set(dcm, 'enable', 'off');
+        end
+        
         set(h.labelEdit3D, 'String', '')
         set(h.labelEdit3D, 'Enable', 'off')
         set(h.labelSet3D, 'Enable', 'off')
@@ -778,6 +785,12 @@ redraw();
     end
 
     function onOpen3DArtery(~,~)
+        dcm = datacursormode(h.fig);
+        if strcmp(get(dcm, 'enable'), 'on')
+            dcm.removeAllDataCursors();
+            set(dcm, 'enable', 'off');
+        end
+
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
         %stlread에서 속도 더빠린 stlreadF로 변경
         if fname ~= 0
@@ -800,6 +813,12 @@ redraw();
     end
 
     function onOpen3DVein(~,~)
+        dcm = datacursormode(h.fig);
+        if strcmp(get(dcm, 'enable'), 'on')
+            dcm.removeAllDataCursors();
+            set(dcm, 'enable', 'off');
+        end
+        
         [fname, fpath] = uigetfile('*.stl','가져올 3D 모델 파일(.stl)을 선택하세요.');
         %stlread에서 속도 더빠린 stlreadF로 변경
         if fname ~= 0
@@ -848,18 +867,14 @@ redraw();
             set(dcm, 'enable', 'on');
             set(dcm, 'SnapToDataVertex','off');
             
-            if vesselState3D && isfield(h, 'p3DHArtery') && ~isempty(h.p3DHArtery)
-                set(h.p3DHArtery, 'HitTest','on');
-                if isfield(h, 'p3DHVein')
-                    set(h.p3DHVein, 'HitTest','off');
-                end
+            if isfield(h, 'p3DHArtery')
+                set(h.p3DHArtery, 'HitTest','off');
+                if vesselState3D, set(h.p3DHArtery, 'HitTest','on'); end
             end
             
-            if ~vesselState3D && isfield(h, 'p3DHVein') &&~isempty(h.p3DHVein)
-                set(h.p3DHVein, 'HitTest','on');
-                if isfield(h, 'p3DHArtery')
-                    set(h.p3DHArtery, 'HitTest','off');
-                end
+            if isfield(h, 'p3DHVein')
+                set(h.p3DHVein, 'HitTest','off');
+                if ~vesselState3D, set(h.p3DHVein, 'HitTest','on'); end
             end
         end
     end
