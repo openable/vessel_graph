@@ -26,14 +26,14 @@ selectIdxArtery3D = [];       % used to highlight node selected in listbox
 
 ptsArtery3D = zeros(0,3);     % x/y coordinates of vertices
 adjArtery3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-labelArtery3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+labelArtery3D = cell(0,5);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부 / 두께
 
 prevIdxVein3D = [];
 selectIdxVein3D = [];
 
 ptsVein3D = zeros(0,3);     % x/y coordinates of vertices
 adjVein3D = sparse([]);     % sparse adjacency matrix (undirected)    % 선분 연결 정보 기억
-labelVein3D = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부
+labelVein3D = cell(0,5);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레이블 이름 / 레이블 편집 여부 / 두께
 
 ax3DLimit = zeros(3,2);
 ax3DView = zeros(1,2);
@@ -145,15 +145,24 @@ redraw();
             'Position',[90 800 60 20],'Callback',@onVein3D);
         h.list3D = uicontrol('Style','listbox', 'Parent',h.tab2, 'String',{}, ...
             'Min',1, 'Max',1, 'Value',-1, 'FontName', 'Fixedsys', 'FontSize', 10, ...
-            'Position',[20 350 130 440], 'Callback',@onSelect3D); % 140
+            'Position',[20 380 130 410], 'Callback',@onSelect3D); % 140
+        
         h.labelText3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
             'String', '이름:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
-            'Position',[20 320 40 20]);
+            'Position',[20 350 40 20]);
         h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 320 60 20], 'KeyPressFcn',@onEditKey3D);
+            'Position',[60 350 60 20], 'KeyPressFcn',@onEditKey3D);
         h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 320 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 350 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+        h.thickLabel3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
+            'String', '두께:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
+            'Position',[20 320 40 20]);
+        h.thickEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
+            'HorizontalAlignment', 'left', 'Enable', 'off', ...
+            'Position',[60 320 60 20], 'KeyPressFcn',@onEditThick3D);
+        h.thickSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
+            'Position',[125 320 25 20], 'Callback',@onThickSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
         
         h.area3D = uipanel('Parent', h.tab2, 'Title', '', 'Units', 'pixels', 'Position', [15 165 140 150]);
         h.open3DArtery = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 동맥 모델 불러오기', ...
@@ -1218,6 +1227,7 @@ redraw();
                         labelArtery3D{m+1,1} = prevIdxArtery3D;
                         labelArtery3D{m+1,2} = idx;
                         labelArtery3D{m+1,3} = strcat('A', num2str(m+1));
+                        labelArtery3D{m+1,5} = 1;
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
@@ -1274,6 +1284,7 @@ redraw();
                         labelVein3D{m+1,1} = prevIdxVein3D;
                         labelVein3D{m+1,2} = idx;
                         labelVein3D{m+1,3} = strcat('V', num2str(m+1));
+                        labelVein3D{m+1,5} = 1;
                     else
                         % warndlg('두 점은 이미 연결되었습니다.','거절')
                     end
