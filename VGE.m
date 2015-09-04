@@ -799,6 +799,7 @@ redraw();
     end
 
     function onOpen3DArtery(~,~)
+        if ishghandle(h.p3DHArtery), delete(h.p3DHArtery); end
         dcm = datacursormode(h.fig);
         if strcmp(get(dcm, 'enable'), 'on')
             dcm.removeAllDataCursors();
@@ -827,6 +828,7 @@ redraw();
     end
 
     function onOpen3DVein(~,~)
+        if ishghandle(h.p3DHVein), delete(h.p3DHVein); end
         dcm = datacursormode(h.fig);
         if strcmp(get(dcm, 'enable'), 'on')
             dcm.removeAllDataCursors();
