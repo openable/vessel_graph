@@ -203,7 +203,7 @@ redraw();
             'LineStyle','none');
         % 마우스 오른족 버튼으로 선택 했을 때 녹색 테두리 - 선분 그리기 위해
         h.prevArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
-            'Marker','o', 'MarkerSize',10, 'Color','g', ...
+            'Marker','o', 'MarkerSize',20, 'Color','g', ...
             'LineStyle','none', 'LineWidth',2);
         % 리스트박스 선택된 선분 녹색 강조
         h.selectArtery3D = line(NaN, NaN, NaN, 'Parent',h.ax3D, 'HitTest','off', ...
@@ -278,10 +278,12 @@ redraw();
             vesselState = 1;
             prevIdxVein = [];
             selectIdxVein = [];
+            if ishghandle(h.selectVein), delete(h.selectVein); end
         else    %h.rV.Value == 1
             vesselState = 0;
             prevIdxArtery = [];
             selectIdxArtery = [];
+            if ishghandle(h.selectArtery), delete(h.selectArtery); end
         end
         
         set(h.labelEdit, 'String', '')
@@ -633,8 +635,8 @@ redraw();
             labelVein{selectIdxVein,4} = 1;
         end
         
-        selectIdxArtery = [];
-        selectIdxVein = [];
+%         selectIdxArtery = [];
+%         selectIdxVein = [];
         set(h.labelEdit, 'String', '')
         set(h.labelEdit, 'Enable', 'off')
         set(h.labelSet, 'Enable', 'off')
@@ -685,10 +687,20 @@ redraw();
             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxArtery)
-            set(h.vesselsArtery(selectIdxArtery), 'Color', 'g')
+            vGroup = [];
+            for n = 1:size(labelArtery, 1)
+                if strcmp(labelArtery{n,3}, labelArtery{selectIdxArtery,3})
+                    vGroup(end+1) = n;
+                end
+            end
+            set(h.vesselsArtery(vGroup), 'Color', 'g')
             if ishghandle(h.selectArtery), delete(h.selectArtery); end
-            h.selectArtery = line(p((selectIdxArtery-1)*3+1:(selectIdxArtery-1)*3+2,1), ...
-                p((selectIdxArtery-1)*3+1:(selectIdxArtery-1)*3+2,2), ...,
+            pgIdx = zeros(1, length(vGroup));
+            for n = 1:length(vGroup)
+                pgIdx(n*3-2:n*3) = (vGroup(n)-1)*3+1:vGroup(n)*3;
+            end
+            pg = p(pgIdx,:);
+            h.selectArtery = line('XData',pg(:,1), 'YData',pg(:,2), ...
                 'Parent',h.ax, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         % 정맥
@@ -704,10 +716,20 @@ redraw();
             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxVein)
-            set(h.vesselsVein(selectIdxVein), 'Color', 'g')
+            vGroup = [];
+            for n = 1:size(labelVein, 1)
+                if strcmp(labelVein{n,3}, labelVein{selectIdxVein,3})
+                    vGroup(end+1) = n;
+                end
+            end
+            set(h.vesselsVein(vGroup), 'Color', 'g')
             if ishghandle(h.selectVein), delete(h.selectVein); end
-            h.selectVein = line(p((selectIdxVein-1)*3+1:(selectIdxVein-1)*3+2,1), ...
-                p((selectIdxVein-1)*3+1:(selectIdxVein-1)*3+2,2), ...,
+            pgIdx = zeros(1, length(vGroup));
+            for n = 1:length(vGroup)
+                pgIdx(n*3-2:n*3) = (vGroup(n)-1)*3+1:vGroup(n)*3;
+            end
+            pg = p(pgIdx,:);
+            h.selectVein = line('XData',pg(:,1), 'YData',pg(:,2), ...
                 'Parent',h.ax, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         
