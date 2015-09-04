@@ -799,7 +799,8 @@ redraw();
     end
 
     function onOpen3DArtery(~,~)
-        if ishghandle(h.p3DHArtery), delete(h.p3DHArtery); end
+        if isfield(h, 'p3DHArtery'), if ishghandle(h.p3DHArtery), delete(h.p3DHArtery); end, end
+        
         dcm = datacursormode(h.fig);
         if strcmp(get(dcm, 'enable'), 'on')
             dcm.removeAllDataCursors();
@@ -828,7 +829,8 @@ redraw();
     end
 
     function onOpen3DVein(~,~)
-        if ishghandle(h.p3DHVein), delete(h.p3DHVein); end
+        if isfield(h, 'p3DHVein'), if ishghandle(h.p3DHVein), delete(h.p3DHVein); end, end
+    
         dcm = datacursormode(h.fig);
         if strcmp(get(dcm, 'enable'), 'on')
             dcm.removeAllDataCursors();
