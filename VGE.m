@@ -43,8 +43,6 @@ vesselState3D = 1;        % Artery (1) / Vein (0) state
 
 % create GUI
 h = initGUI();
-initAxes();
-redraw();
 
     function h = initGUI()
         scr = get(0,'ScreenSize');
@@ -236,13 +234,6 @@ redraw();
         h.verticesVein3D = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
         h.vesselsVein3D = [];
-    end
-
-    function initAxes(~,~)
-        ptsArtery(1,:) = [0 0];
-        adjArtery(end+1,end+1) = 0;
-        
-        onClear();
     end
 
     function onFigKey(~,~)
@@ -685,7 +676,7 @@ redraw();
         h.vesselsArtery = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
             strcat(labelArtery(:,3)), ...  % label(:)
             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
-            'VerticalAlign','bottom', 'HorizontalAlign','left');
+            'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax);
         if ~isempty(selectIdxArtery)
             vGroup = [];
             for n = 1:size(labelArtery, 1)
@@ -714,7 +705,7 @@ redraw();
         h.vesselsVein = text((p(1:3:end,1)+p(2:3:end,1))/2+8, (p(1:3:end,2)+p(2:3:end,2))/2+8, ...
             strcat(labelVein(:,3)), ...  % labelV(:)
             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
-            'VerticalAlign','bottom', 'HorizontalAlign','left');
+            'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax);
         if ~isempty(selectIdxVein)
             vGroup = [];
             for n = 1:size(labelVein, 1)
@@ -761,7 +752,7 @@ redraw();
             h.verticesArtery = text(ptsArtery(:,1)+2.5, ptsArtery(:,2)+2.5, ...
                 strcat('a', num2str((1:size(ptsArtery,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
-                'VerticalAlign','bottom', 'HorizontalAlign','left');
+                'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax);
         else
             set(h.menu, 'Checked','off')
         end
@@ -772,7 +763,7 @@ redraw();
             h.verticesVein = text(ptsVein(:,1)+2.5, ptsVein(:,2)+2.5, ...
                 strcat('v', num2str((1:size(ptsVein,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
-                'VerticalAlign','bottom', 'HorizontalAlign','left');
+                'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax);
         else
             set(h.menu, 'Checked','off')
         end
@@ -976,7 +967,7 @@ redraw();
         h.vesselsArtery3D = text((p(1:3:end,1)+p(2:3:end,1))/2, (p(1:3:end,2)+p(2:3:end,2))/2, (p(1:3:end,3)+p(2:3:end,3))/2, ...
             strcat(labelArtery3D(:,3)), ...  % label(:)
             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
-            'VerticalAlign','bottom', 'HorizontalAlign','left');
+            'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax3D);
         if ~isempty(selectIdxArtery3D)
             vGroup = [];
             for n = 1:size(labelArtery3D, 1)
@@ -1005,7 +996,7 @@ redraw();
         h.vesselsVein3D = text((p(1:3:end,1)+p(2:3:end,1))/2, (p(1:3:end,2)+p(2:3:end,2))/2, (p(1:3:end,3)+p(2:3:end,3))/2, ...
             strcat(labelVein3D(:,3)), ...  % label(:)
             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
-            'VerticalAlign','bottom', 'HorizontalAlign','left');
+            'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax3D);
         if ~isempty(selectIdxVein3D)
             vGroup = [];
             for n = 1:size(labelVein3D, 1)
@@ -1053,7 +1044,7 @@ redraw();
             h.verticesArtery3D = text(ptsArtery3D(:,1)+2.5, ptsArtery3D(:,2)+2.5,  ptsArtery3D(:,3)+2.5,...
                 strcat('a', num2str((1:size(ptsArtery3D,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
-                'VerticalAlign','bottom', 'HorizontalAlign','left');
+                'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax3D);
         else
             set(h.menu3D, 'Checked','off')
         end
@@ -1064,7 +1055,7 @@ redraw();
             h.verticesVein3D = text(ptsVein3D(:,1)+2.5, ptsVein3D(:,2)+2.5,  ptsVein3D(:,3)+2.5,...
                 strcat('v', num2str((1:size(ptsVein3D,1))')), ...
                 'HitTest','off', 'FontSize', 8, 'Color', [0.1,0.1,0.1]*7, 'FontWeight', 'normal', ...
-                'VerticalAlign','bottom', 'HorizontalAlign','left');
+                'VerticalAlign','bottom', 'HorizontalAlign','left', 'Parent', h.ax3D);
         else
             set(h.menu3D, 'Checked','off')
         end
