@@ -436,7 +436,10 @@ h = initGUI();
                 end
                 
             else
-                idx = get(h.list, 'Value');     % 선분 지울 때
+                 % 선분 지울 때
+                if ishghandle(h.selectArtery), delete(h.selectArtery); end
+                
+                idx = get(h.list, 'Value');
                 adjArtery(labelArtery{idx,1}, labelArtery{idx,2}) = 0;
                 labelArtery(idx,:) = [];
                 
@@ -446,12 +449,7 @@ h = initGUI();
                     end
                 end
             end
-            
-            
-            % clear previous selections
-            prevIdxArtery = [];
-            selectIdxArtery = [];
-            
+                        
         else
             if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxVein;
@@ -485,7 +483,10 @@ h = initGUI();
                 end
                 
             else
-                idx = get(h.list, 'Value');     % 선분 지울 때
+                % 선분 지울 때
+                if ishghandle(h.selectVein), delete(h.selectVein); end
+                
+                idx = get(h.list, 'Value');
                 adjVein(labelVein{idx,1}, labelVein{idx,2}) = 0;
                 labelVein(idx,:) = [];
                 
@@ -495,11 +496,12 @@ h = initGUI();
                     end
                 end
             end
-            
-            % clear previous selections
-            prevIdxVein = [];
-            selectIdxVein = [];
         end
+        
+        prevIdxArtery = [];
+        selectIdxArtery = [];
+        prevIdxVein = [];
+        selectIdxVein = [];
         
         % update GUI
         if strcmp(get(h.labelEdit, 'Enable'), 'on')
