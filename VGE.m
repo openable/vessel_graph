@@ -776,10 +776,12 @@ redraw();
             vesselState3D = 1;
             prevIdxVein3D = [];
             selectIdxVein3D = [];
+            if ishghandle(h.selectVein3D), delete(h.selectVein3D); end
         else    %h.rV3D.Value == 1
             vesselState3D = 0;
             prevIdxArtery3D = [];
             selectIdxArtery3D = [];
+            if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
         end
         
         dcm = datacursormode(h.fig);
@@ -824,7 +826,7 @@ redraw();
             material('dull');
             axis('image');
             view([20 29]);
-            set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
+            set(h.ax3D, 'XTick',-1000:100:1000, 'YTick',-1000:100:1000, 'ZTick',-1000:100:1000)
         end
     end
 
@@ -854,7 +856,7 @@ redraw();
             material('dull');
             axis('image');
             view([20 29]);
-            set(h.ax3D, 'XTick',[-1000:100:1000], 'YTick',[-1000:100:1000], 'ZTick',[-1000:100:1000])
+            set(h.ax3D, 'XTick',-1000:100:1000, 'YTick',-1000:100:1000, 'ZTick',-1000:100:1000)
         end
     end
 
@@ -954,11 +956,20 @@ redraw();
             'HitTest','off', 'FontSize', 10, 'Color', 'r', 'FontWeight', 'bold', ...
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxArtery3D)
-            set(h.vesselsArtery3D(selectIdxArtery3D), 'Color', 'g')
+            vGroup = [];
+            for n = 1:size(labelArtery3D, 1)
+                if strcmp(labelArtery3D{n,3}, labelArtery3D{selectIdxArtery3D,3})
+                    vGroup(end+1) = n;
+                end
+            end
+            set(h.vesselsArtery3D(vGroup), 'Color', 'g')
             if ishghandle(h.selectArtery3D), delete(h.selectArtery3D); end
-            h.selectArtery3D = line(p((selectIdxArtery3D-1)*3+1:(selectIdxArtery3D-1)*3+2,1), ...
-                p((selectIdxArtery3D-1)*3+1:(selectIdxArtery3D-1)*3+2,2), ...,
-                p((selectIdxArtery3D-1)*3+1:(selectIdxArtery3D-1)*3+2,3), ...,
+            pgIdx = zeros(1, length(vGroup));
+            for n = 1:length(vGroup)
+                pgIdx(n*3-2:n*3) = (vGroup(n)-1)*3+1:vGroup(n)*3;
+            end
+            pg = p(pgIdx,:);
+            h.selectArtery3D = line('XData',pg(:,1), 'YData',pg(:,2), 'ZData',pg(:,3), ...
                 'Parent',h.ax3D, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         % Á¤¸Æ
@@ -974,11 +985,20 @@ redraw();
             'HitTest','off', 'FontSize', 10, 'Color', 'b', 'FontWeight', 'bold', ...
             'VerticalAlign','bottom', 'HorizontalAlign','left');
         if ~isempty(selectIdxVein3D)
-            set(h.vesselsVein3D(selectIdxVein3D), 'Color', 'g')
+            vGroup = [];
+            for n = 1:size(labelVein3D, 1)
+                if strcmp(labelVein3D{n,3}, labelVein3D{selectIdxVein3D,3})
+                    vGroup(end+1) = n;
+                end
+            end
+            set(h.vesselsVein3D(vGroup), 'Color', 'g')
             if ishghandle(h.selectVein3D), delete(h.selectVein3D); end
-            h.selectVein3D = line(p((selectIdxVein3D-1)*3+1:(selectIdxVein3D-1)*3+2,1), ...
-                p((selectIdxVein3D-1)*3+1:(selectIdxVein3D-1)*3+2,2), ...,
-                p((selectIdxVein3D-1)*3+1:(selectIdxVein3D-1)*3+2,3), ...,
+            pgIdx = zeros(1, length(vGroup));
+            for n = 1:length(vGroup)
+                pgIdx(n*3-2:n*3) = (vGroup(n)-1)*3+1:vGroup(n)*3;
+            end
+            pg = p(pgIdx,:);
+            h.selectVein3D = line('XData',pg(:,1), 'YData',pg(:,2), 'ZData',pg(:,3), ...
                 'Parent',h.ax3D, 'HitTest','off', 'LineWidth',2, 'Color','g');
         end
         
@@ -1405,8 +1425,8 @@ redraw();
             labelVein3D{selectIdxVein3D,4} = 1;
         end
         
-        selectIdxArtery3D = [];
-        selectIdxVein3D = [];
+%        selectIdxArtery3D = [];
+%        selectIdxVein3D = [];
         set(h.labelEdit3D, 'String', '')
         set(h.labelEdit3D, 'Enable', 'off')
         set(h.labelSet3D, 'Enable', 'off')
