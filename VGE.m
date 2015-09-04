@@ -426,7 +426,7 @@ redraw();
                 rowList = [];
                 for q = 1:size(labelArtery,1)
                     if labelArtery{q,1} == idx || labelArtery{q,2} == idx
-                        rowList = [rowList q];
+                        rowList(end+1) = q;
                     end
                 end
                 labelArtery(rowList,:) = [];
@@ -475,7 +475,7 @@ redraw();
                 rowList = [];
                 for q = 1:size(labelVein,1)
                     if labelVein{q,1} == idx || labelVein{q,2} == idx
-                        rowList = [rowList q];
+                        rowList(end+1) = q;
                     end
                 end
                 labelVein(rowList,:) = [];
@@ -1097,7 +1097,7 @@ redraw();
                 rowList = [];
                 for q = 1:size(labelArtery3D,1)
                     if labelArtery3D{q,1} == idx || labelArtery3D{q,2} == idx
-                        rowList = [rowList q];
+                        rowList(end+1) = q;
                     end
                 end
                 labelArtery3D(rowList,:) = [];
@@ -1144,7 +1144,7 @@ redraw();
                 rowList = [];
                 for q = 1:size(labelVein3D,1)
                     if labelVein3D{q,1} == idx || labelVein3D{q,2} == idx
-                        rowList = [rowList q];
+                        rowList(end+1) = q;
                     end
                 end
                 labelVein3D(rowList,:) = [];
