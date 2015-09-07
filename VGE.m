@@ -151,17 +151,17 @@ h = initGUI();
             'Position',[20 350 40 20]);
         h.labelEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 350 60 20], 'KeyPressFcn',@onEditKey3D);
+            'Position',[60 350 60 20], 'KeyPressFcn',@onLabelEditKey3D);
         h.labelSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 350 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 350 25 20], 'Callback',@onLabelSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetLabelKey3D);
         h.thickLabel3D = uicontrol('Style','text', 'Parent',h.tab2, 'String',{}, ...
             'String', '두께:', 'HorizontalAlignment', 'left', 'FontSize', 10, ...
             'Position',[20 320 40 20]);
         h.thickEdit3D = uicontrol('Style','edit', 'Parent',h.tab2, 'String',{}, ...
             'HorizontalAlignment', 'left', 'Enable', 'off', ...
-            'Position',[60 320 60 20], 'KeyPressFcn',@onEditThick3D);
+            'Position',[60 320 60 20], 'KeyPressFcn',@onThickEditKey3D);
         h.thickSet3D = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','설정', ...
-            'Position',[125 320 25 20], 'Callback',@onThickSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetKey3D);
+            'Position',[125 320 25 20], 'Callback',@onThickSet3D, 'Enable', 'off', 'KeyPressFcn',@onSetThickKey3D);
         
         h.area3D = uipanel('Parent', h.tab2, 'Title', '', 'Units', 'pixels', 'Position', [15 165 140 150]);
         h.open3DArtery = uicontrol('Style','pushbutton', 'Parent',h.tab2, 'String','3D 동맥 모델 불러오기', ...
@@ -1451,7 +1451,7 @@ h = initGUI();
         redraw3D()
     end
 
-    function onEditKey3D(~,~)
+    function onLabelEditKey3D(~,~)
         % text edit 창에서 Enter, ESC 키보드 입력시 동작
         key = get(h.fig,'CurrentCharacter');
         
@@ -1467,4 +1467,66 @@ h = initGUI();
         end
     end
 
+    function onSetLabelKey3D(~,~)
+        % set 버튼 포커스 후 Enter, ESC 키보드 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+        
+        if isequal(key,char(13))
+            % 포커스를 옆에 set 버튼으로 이동, 그래야 현재 편집 정보 반영 됨
+            onLabelSet3D();
+        elseif isequal(key,char(27))
+            selectIdxArtery3D = [];
+            selectIdxVein3D = [];
+            setCategory3D();
+        end
+    end
+
+    function onThickSet3D(~,~)
+        if strcmp(set(h.thickEdit3D, 'Enable'), 'off'), return, end
+        thickness = get(h.thickEdit3D, 'String');
+        if isnan(str2double(thickness)), return, end
+        
+        if vesselState3D
+            labelArtery3D{selectIdxArtery3D,5} = thickness;
+        else
+            labelVein3D{selectIdxVein3D,5} = thickness;
+        end
+        
+        set(h.labelEdit3D, 'String', '')
+        set(h.labelEdit3D, 'Enable', 'off')
+        set(h.labelSet3D, 'Enable', 'off')
+        set(h.thickEdit3D, 'String', '')
+        set(h.thickEdit3D, 'Enable', 'off')
+        set(h.thickSet3D, 'Enable', 'off')
+        redraw3D()
+    end
+
+    function onThickEditKey3D(~,~)
+        % text edit 창에서 Enter, ESC 키보드 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+        
+        if isequal(key,char(13))
+            % 포커스를 옆에 set 버튼으로 이동, 그래야 현재 편집 정보 반영 됨
+            uicontrol(h.thickSet3D);
+            onThickSet3D();
+        elseif isequal(key,char(27))
+            selectIdxArtery3D = [];
+            selectIdxVein3D = [];
+            uicontrol(h.thickSet3D);
+            setCategory3D();
+        end
+    end
+
+    function onSetThickKey3D(~,~)
+        % set 버튼 포커스 후 Enter, ESC 키보드 입력시 동작
+        key = get(h.fig,'CurrentCharacter');
+        
+        if isequal(key,char(13))
+            onThickSet3D();
+        elseif isequal(key,char(27))
+            selectIdxArtery = [];
+            selectIdxVein = [];
+            setCategory3D();
+        end
+    end
 end
