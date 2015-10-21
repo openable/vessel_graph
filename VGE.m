@@ -18,6 +18,10 @@ labelVein = cell(0,4);      % 선분 라벨 저장용 변수, 첫번째 점 / 두번째 점 / 레�
 
 vesselState = 1;        % Artery (1) / Vein (0) state
 
+rootMode2D = 0;        % 최상위 점 선택 모드
+rootIdxArtery2D = [];
+rootIdxVein2D = [];
+
 
 showVertices3D = false;   % flag to determine whether to show node labels
 
@@ -113,6 +117,10 @@ h = initGUI();
         h.verticesArtery = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
         h.vesselsArtery = [];
+        % 루트 선택 했을 때 동맥 점 검은색 강조
+        h.rootArtery2D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'Marker','o', 'MarkerSize',15, 'Color','k', ...
+            'LineStyle','none', 'LineWidth',4);
         
         
         % 정맥 (Vein)
@@ -134,7 +142,10 @@ h = initGUI();
         h.verticesVein = [];
         % 선분 라벨링 표시용 변수(기억용 아님). E1, E2, ... 순서대로
         h.vesselsVein = [];
-        
+        % 루트 선택 했을 때 정맥 점 검은색 강조
+        h.rootVein2D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+            'Marker','o', 'MarkerSize',15, 'Color','k', ...
+            'LineStyle','none', 'LineWidth',4);
         
         
         %3D 내용 초기화
@@ -307,6 +318,20 @@ h = initGUI();
         if vesselState == 1
             % 동맥 처리 (Artery)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
+                % 동맥 Root 설정
+                if rootMode2D
+                    [dst,idx] = min(sum(bsxfun(@minus, ptsArtery, p(1,1:2)).^2,2));
+                    if sqrt(dst) > 8
+                        warndlg({'유효한 점을 선택하지 않아 자동 할당을 중단합니다.' '자동 할당을 하려면 다시 메뉴 버튼을 누르십시오'},'경고');
+                        rootMode2D = 0; return
+                    end
+                    
+                    rootIdxArtery2D = idx;
+                    rootMode2D = 0;
+                    redraw()
+                    return
+                end
+                
                 % add a new node
                 ptsArtery(end+1,:) = p(1,1:2);
                 adjArtery(end+1,end+1) = 0;
@@ -350,6 +375,20 @@ h = initGUI();
         else
             % 정맥 처리 (Vein)
             if strcmpi(get(h.fig,'SelectionType'), 'Normal')
+                % 동맥 Root 설정
+                if rootMode2D
+                    [dst,idx] = min(sum(bsxfun(@minus, ptsVein, p(1,1:2)).^2,2));
+                    if sqrt(dst) > 8
+                        warndlg({'유효한 점을 선택하지 않아 자동 할당을 중단합니다.' '자동 할당을 하려면 다시 메뉴 버튼을 누르십시오'},'경고');
+                        rootMode2D = 0; return
+                    end
+                    
+                    rootIdxVein2D = idx;
+                    rootMode2D = 0;
+                    redraw()
+                    return
+                end
+                
                 % add a new node
                 ptsVein(end+1,:) = p(1,1:2);
                 adjVein(end+1,end+1) = 0;
@@ -405,6 +444,14 @@ h = initGUI();
         end
     end
 
+    function onAuto(~,~)
+        msgbox('혈관 그래프 최상위 점(Root)을 왼쪽 클릭으로 선택하십시오.','안내');
+        rootMode2D = 1;
+    end
+
+    function onCheck(~,~)
+    end
+
     function onDelete(~,~)
         % check that list of nodes is not empty
         if isempty(ptsArtery) && isempty(ptsVein), return; end
@@ -413,6 +460,11 @@ h = initGUI();
         if vesselState
             if ~isempty(prevIdxArtery)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxArtery;
+                
+                % Root 여부 확인 및 삭제
+                if idx == rootIdxArtery2D
+                    rootIdxArtery2D = [];
+                end
                 
                 % 꼭지점 삭제 단계
                 ptsArtery(idx,:) = [];
@@ -460,6 +512,11 @@ h = initGUI();
         else
             if ~isempty(prevIdxVein)             % 마우스 오른쪽 클릭으로만 Vertex 지움.
                 idx = prevIdxVein;
+                
+                % Root 여부 확인 및 삭제
+                if idx == rootIdxVein2D
+                    rootIdxVein2D = [];
+                end
                 
                 % 꼭지점 삭제 단계
                 ptsVein(idx,:) = [];
@@ -748,10 +805,12 @@ h = initGUI();
         % 동맥
         set(h.ptsArtery, 'XData', ptsArtery(:,1), 'YData',ptsArtery(:,2))
         set(h.prevArtery, 'XData', ptsArtery(prevIdxArtery,1), 'YData',ptsArtery(prevIdxArtery,2))
+        set(h.rootArtery2D, 'XData', ptsArtery(rootIdxArtery2D,1), 'YData',ptsArtery(rootIdxArtery2D,2))
         
         % 정맥
         set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
         set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
+        set(h.rootVein2D, 'XData', ptsVein(rootIdxVein2D,1), 'YData',ptsVein(rootIdxVein2D,2))
         
         % 혈관 이름 (선분) 목록 출력
         if vesselState
