@@ -72,9 +72,9 @@ h = initGUI();
         h.labelSet = uicontrol('Style','pushbutton', 'Parent',h.tab1, 'String','설정', ...
             'Position',[125 170 25 20], 'Callback',@onLabelSet, 'Enable', 'off', 'KeyPressFcn',@onSetKey);
         h.autoLabel = uicontrol('Style','pushbutton', 'Parent',h.tab1, 'String','혈관 자동 할당', ...
-            'Position',[20 140 86 20], 'Callback',@onDelete, 'Enable', 'off');
+            'Position',[20 140 86 20], 'Callback',@onAuto, 'Enable', 'off');
         h.autoBox = uicontrol('Style','checkbox', 'Parent',h.tab1, 'String','혈관 자동 할당', ...
-            'Position',[110 140 20 20], 'Callback',@onDelete, 'Enable', 'off');
+            'Position',[110 140 20 20], 'Callback',@onCheck, 'Enable', 'off');
         h.autoText = uicontrol('Style','text', 'Parent',h.tab1, 'String',{}, ...
             'String', '지속', 'HorizontalAlignment', 'right', 'FontSize', 8, ...
             'Enable', 'off', 'Position',[125 136 25 20]);
@@ -673,6 +673,17 @@ h = initGUI();
     end
 
     function redraw()
+        % 혈관 자동 할당 활성화 여부: 선분이 1개 이상 있을 때만 활성화
+        if (size(labelArtery, 1) >= 1 && vesselState) || (size(labelVein, 1) >= 1 && ~vesselState)
+            set(h.autoLabel, 'Enable', 'on');
+            set(h.autoBox, 'Enable', 'on');
+            set(h.autoText, 'Enable', 'on');
+        else
+            set(h.autoLabel, 'Enable', 'off');
+            set(h.autoBox, 'Enable', 'off');
+            set(h.autoText, 'Enable', 'off');
+        end
+        
         % 선분 그리기 단계
         % 동맥
         p = nan(3*nnz(adjArtery),2);
