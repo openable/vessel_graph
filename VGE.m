@@ -644,6 +644,15 @@ h = initGUI();
         adjVein = sparse([]);
         labelVein = cell(0,3);      % label 엣지 정보 제거 추가
         
+        % root 점 정보 삭제
+        rootIdxArtery2D = [];
+        rootIdxVein2D = [];
+
+        % chage 예정 점 정보 삭제
+        changeIdxArtery2D = [];
+        changeIdxVein2D = [];
+                    
+        
         % update GUI
         set(h.labelEdit, 'String', '')
         set(h.labelEdit, 'Enable', 'off')
