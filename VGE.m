@@ -296,16 +296,29 @@ h = initGUI();
     end
 
     function setCategory()
+        rootMode2D = 0;
+        changeMode2D = 0;
+        
         if h.rA.Value == 1
             vesselState = 1;
             prevIdxVein = [];
             selectIdxVein = [];
             if ishghandle(h.selectVein), delete(h.selectVein); end
+
+            rootIdxVein2D = [];
+            if ishghandle(h.rootVein2D), delete(h.rootVein2D); end
+            changeIdxVein2D = [];
+            if ishghandle(h.changeVein2D), delete(h.changeVein2D); end
         else    %h.rV.Value == 1
             vesselState = 0;
             prevIdxArtery = [];
             selectIdxArtery = [];
             if ishghandle(h.selectArtery), delete(h.selectArtery); end
+            
+            rootIdxArtery2D = [];
+            if ishghandle(h.rootArtery2D), delete(h.rootArtery2D); end
+            changeIdxArtery2D = [];
+            if ishghandle(h.changeArtery2D), delete(h.changeArtery2D); end
         end
         
         set(h.labelEdit, 'String', '')
@@ -869,13 +882,33 @@ h = initGUI();
         % µ¿¸Æ
         set(h.ptsArtery, 'XData', ptsArtery(:,1), 'YData',ptsArtery(:,2))
         set(h.prevArtery, 'XData', ptsArtery(prevIdxArtery,1), 'YData',ptsArtery(prevIdxArtery,2))
+        if ~ishghandle(h.rootArtery2D)
+            h.rootArtery2D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+                'Marker','o', 'MarkerSize',15, 'Color','k', ...
+                'LineStyle','none', 'LineWidth',4);
+        end
         set(h.rootArtery2D, 'XData', ptsArtery(rootIdxArtery2D,1), 'YData',ptsArtery(rootIdxArtery2D,2))
+        if ~ishghandle(h.changeArtery2D)
+            h.changeArtery2D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+                'Marker','o', 'MarkerSize',20, 'Color','r', ...
+                'LineStyle','none', 'LineWidth',2);
+        end
         set(h.changeArtery2D, 'XData', ptsArtery(changeIdxArtery2D,1), 'YData',ptsArtery(changeIdxArtery2D,2))
         
         % Á¤¸Æ
         set(h.ptsVein, 'XData', ptsVein(:,1), 'YData',ptsVein(:,2))
         set(h.prevVein, 'XData', ptsVein(prevIdxVein,1), 'YData', ptsVein(prevIdxVein,2))
+        if ~ishghandle(h.rootVein2D)
+            h.rootVein2D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+                'Marker','o', 'MarkerSize',15, 'Color','k', ...
+                'LineStyle','none', 'LineWidth',4);
+        end
         set(h.rootVein2D, 'XData', ptsVein(rootIdxVein2D,1), 'YData',ptsVein(rootIdxVein2D,2))
+        if ~ishghandle(h.changeVein2D)
+            h.changeVein2D = line(NaN, NaN, 'Parent',h.ax, 'HitTest','off', ...
+                'Marker','o', 'MarkerSize',20, 'Color','b', ...
+                'LineStyle','none', 'LineWidth',2);
+        end
         set(h.changeVein2D, 'XData', ptsVein(changeIdxVein2D,1), 'YData',ptsVein(changeIdxVein2D,2))
         
         % Ç÷°ü ÀÌ¸§ (¼±ºÐ) ¸ñ·Ï Ãâ·Â
