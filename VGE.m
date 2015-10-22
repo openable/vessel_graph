@@ -337,7 +337,10 @@ h = initGUI();
                 if rootMode2D
                     if sqrt(dst) > 8
                         warndlg({'유효한 점을 선택하지 않아 자동 할당을 중단합니다.' '자동 할당을 하려면 다시 메뉴 버튼을 누르십시오'},'경고');
-                        rootMode2D = 0; return
+                        rootIdxArtery2D = [];
+                        rootMode2D = 0;
+                        redraw()
+                        return
                     end
                     
                     rootIdxArtery2D = idx;
@@ -412,7 +415,10 @@ h = initGUI();
                 if rootMode2D
                     if sqrt(dst) > 8
                         warndlg({'유효한 점을 선택하지 않아 자동 할당을 중단합니다.' '자동 할당을 하려면 다시 메뉴 버튼을 누르십시오'},'경고');
-                        rootMode2D = 0; return
+                        rootIdxVein2D = [];
+                        rootMode2D = 0;
+                        redraw()
+                        return
                     end
                     
                     rootIdxVein2D = idx;
