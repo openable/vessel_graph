@@ -158,12 +158,12 @@ classdef CList < handle
         end
         
         function b = contains(obj, el)  % 判断列表是否为空
+            b = 0;
             for i = 1 : obj.len
                 if isequal(obj.buffer{i}, el)
-                    b = 1; break
+                    b = 1; return
                 end
             end
-            b = 0;
         end
         
         % 插入新元素el到第k个元素之前，如果k为负数，则插入到倒数第-k个元素之后
