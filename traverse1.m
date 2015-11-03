@@ -1,4 +1,4 @@
-function traverse(root, adjM)
+function traverse1(root, adjM)
 parent = [];
 path = CQueue();
 path.push(root);
