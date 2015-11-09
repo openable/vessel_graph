@@ -41,6 +41,9 @@ while ~path.isempty()
                     break
                 end
             end
+            
+            branch = find(adjM(eNode,:) == 1);
+            fTable{eIndex,7} = length(branch)-1;
         end
     end
 end
