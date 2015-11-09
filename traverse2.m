@@ -1,4 +1,4 @@
-function traverse2(root, adjM)
+function traverse2(root, adjM, pts)
 parent = CList();
 path = CQueue();
 path.push(root);
@@ -21,7 +21,6 @@ parent.removeall();
 fTable = cell(edgeCount, 7);    %sNode / eNode / current edge index / parents edge index / 각도 벡터 / depth / 분기 갯수
 path.push(root);
 eIndex = 0;
-fTable{1,4} = 0;        %root 시작점의 parents edge는 없으니 0으로
 
 while ~path.isempty()
     sNode = path.pop();
@@ -43,6 +42,14 @@ while ~path.isempty()
                 end
             end
         end
+    end
+end
+
+for n = 1:size(fTable,1)
+    if ~isempty(fTable{n,4})
+        cVector = pts(fTable{n,2},:) - pts(fTable{n,1},:);
+        pVector = pts(fTable{fTable{n,4},2},:) - pts(fTable{fTable{n,4},1},:);
+        fTable{n,5} = cVector - pVector;
     end
 end
 
