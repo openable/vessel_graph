@@ -52,6 +52,7 @@ end
 
 for n = 1:size(fTable,1)
     % 부모 선분과 현재 선분 사이 각도 계산
+    % http://kr.mathworks.com/matlabcentral/newsreader/view_thread/148079
     if ~isempty(fTable{n,4})
         %현재 선분의 시작점을 중심으로 각도 측정
         pVector = pts(fTable{fTable{n,4},1},:) - pts(fTable{fTable{n,4},2},:); %시작점에서 끝나는 점 뺌
@@ -68,11 +69,24 @@ for n = 1:size(fTable,1)
     if isempty(fTable{n,4})
         fTable{n,6} = 1;    % root의 선분은 depth 1로 설정
     else
+%         분기 X, 부모 depth 유지
+%         분기 X, 90도 이하면 부모 depth + 1
+%         분기 O, 각도가 145도 이상이면 부모 depth 유지
+%         분기 O, 각도가 145도 이하일 때 부모 depth + 1
         pDepth = fTable{fTable{n,4},6};
+
         if fTable{fTable{n,4},7} > 1
-            fTable{n,6} = pDepth+1;
+            if fTable{n,5} > 145
+                fTable{n,6} = pDepth;
+            else
+                fTable{n,6} = pDepth+1;
+            end
         else
-            fTable{n,6} = pDepth;
+            if fTable{n,5} < 90
+                fTable{n,6} = pDepth+1;
+            else
+                fTable{n,6} = pDepth;
+            end
         end
     end
 end
