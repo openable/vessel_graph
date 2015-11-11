@@ -1,4 +1,4 @@
-function traverse2(root, adjM, pts)
+function lTable = traverse2(root, adjM, pts)
 parent = CList();
 path = CQueue();
 path.push(root);
