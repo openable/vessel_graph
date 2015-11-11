@@ -92,13 +92,13 @@ for n = 1:size(fTable,1)
 end
 
 lTable = cell(edgeCount, 3);    % sNode / eNode / label
-lTable(:,1:2) = fTable(:,3:4);
+lTable(:,1:2) = fTable(:,1:2);
 for n = 1:edgeCount
     lTable{n,3} = autoLabel(fTable, lTable, n);
 end
 
-% disp(fTable);
-% disp(lTable);
+%disp(fTable);
+%disp(lTable);
 end
 
 function label = autoLabel(fTable, lTable, line)
