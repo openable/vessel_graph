@@ -357,6 +357,15 @@ h = initGUI();
                     end
                     
                     rootIdxArtery2D = idx;
+                    
+                    % 선분 자동 할당 된 결과 반영
+                    lTable = traverse2(rootIdxArtery2D, adjArtery + adjArtery', ptsArtery);
+                    for p=1:size(lTable,1)
+                        line = findEIdx(labelArtery, lTable{p,1}, lTable{p,2});
+                        labelArtery{line,3} = lTable{p,3};
+                        labelArtery{line,4}  = 'e';
+                    end
+                    
                     rootMode2D = 0;
                     redraw()
                     return
