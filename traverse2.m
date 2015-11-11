@@ -91,4 +91,47 @@ for n = 1:size(fTable,1)
     end
 end
 
-disp(fTable);
+lTable = cell(edgeCount, 3);    % sNode / eNode / label
+lTable(:,1:2) = fTable(:,3:4);
+for n = 1:edgeCount
+    lTable{n,3} = autoLabel(fTable, lTable, n);
+end
+
+% disp(fTable);
+% disp(lTable);
+end
+
+function label = autoLabel(fTable, lTable, line)
+list = cell(5,1);
+list{1,1} = 'Ao';
+list{2,1} = {{'Ao', 'CA'}, {'Ao', 'SMA'}, {'Ao', 'IMA'}, {'Ao', 'RCIA'}, {'Ao', 'LCIA'}};
+list{3,1} = {{'Ao', 'CA', 'LGA'}, {'Ao', 'CA', 'CHA'}, {'Ao', 'CA', 'SA'}};
+list{4,1} = {{'Ao', 'CA', 'CHA', 'PHA'}, {'Ao', 'CA', 'CHA', 'GDA'}, {'Ao', 'CA', 'SA', 'LGEA'}};
+list{5,1} = {{'Ao', 'CA', 'CHA', 'PHA', 'RGA'}, {'Ao', 'CA', 'CHA', 'PHA', 'LHA'}, {'Ao', 'CA', 'CHA', 'PHA', 'RHA'}, {'Ao', 'CA', 'CHA', 'GDA', 'RGEA'}};
+
+    depth = fTable{line, 6};
+    if depth == 1
+        label = list{1,1}; return
+    else
+        pEdge = fTable{line, 4};
+        pLabel = lTable{pEdge, 3};
+        target = list{depth};
+        index = [];
+        for n = 1:size(target, 2)
+            if ~strcmp(target{n}{depth-1}, pLabel)
+                index = [index n];
+            end
+        end
+        target(index) = [];
+        
+        if depth == fTable{pEdge,6}
+            label = pLabel; return
+        elseif strcmp(pLabel, 'Unknown')
+            label = 'Unknown'; return
+        elseif size(target,2) > 1
+            label = target{randi([1 size(target,2)])}{depth}; return
+        end
+    end
+    
+    label = 'Unknown';
+end
